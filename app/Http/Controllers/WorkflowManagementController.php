@@ -122,6 +122,11 @@ class WorkflowManagementController extends Controller
                 return back()->with('error', 'Laporan dengan status "'.$report->status.'" tidak dapat diteruskan ke Kepala Departemen.');
             }
 
+            // Initial verification belongs to admin (or the department head); staff may only forward verified work
+            if ($user->isStaff() && in_array($report->status, ['submitted', 'pending'])) {
+                return back()->with('error', 'Laporan harus diverifikasi Admin terlebih dahulu sebelum diteruskan.');
+            }
+
             // If still submitted/pending, verify first via WorkflowService
             if (in_array($report->status, ['submitted', 'pending'])) {
                 $this->workflowService->verifyReport($report, $user);
@@ -173,9 +178,13 @@ class WorkflowManagementController extends Controller
 
         $assignedTo = User::findOrFail($request->assigned_to);
 
-        // Verify the assigned user is staff
+        // Verify the assigned user is staff of the head's own department (multi-OPD isolation)
         if (! $assignedTo->isStaff()) {
             return back()->with('error', 'User yang dipilih bukan staff.');
+        }
+
+        if ((int) $assignedTo->department_id !== (int) $user->department_id) {
+            return back()->with('error', 'Staff yang dipilih bukan bagian dari departemen Anda.');
         }
 
         return DB::transaction(function () use ($id, $assignedTo, $user, $request) {
@@ -376,6 +385,11 @@ class WorkflowManagementController extends Controller
         ]);
 
         $assignedTo = User::findOrFail($request->assigned_to);
+
+        // Revision work can only go back to field staff, never to a citizen or another role
+        if (! $assignedTo->isStaff()) {
+            return back()->with('error', 'User yang dipilih bukan staff.');
+        }
 
         return DB::transaction(function () use ($id, $assignedTo, $user, $request) {
             $report = Report::lockForUpdate()->findOrFail($id);
