@@ -206,7 +206,7 @@
                                 {{ $activity['user'] }} • {{ $activity['department'] }} • {{ $activity['created_at']->diffForHumans() }}
                             </div>
                             <span class="badge bg-{{ $activity['status'] == 'pending' ? 'warning' : ($activity['status'] == 'resolved' ? 'success' : 'info') }}">
-                                {{ ucfirst(str_replace('_', ' ', $activity['status'])) }}
+                                {{ \App\Models\Report::statusLabel($activity['status']) }}
                             </span>
                         </div>
                     </div>

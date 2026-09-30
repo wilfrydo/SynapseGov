@@ -66,3 +66,9 @@ body.workspace-ui{padding-top:68px}.workspace-ui .navbar-role-badge{text-transfo
 
 .dh-workspace a,.dh-panel a,.dh-report-row,.dh-report-row *,.dh-button,.dh-panel-heading a,.dh-title-button,.dh-tabs a,.dh-reset,.workspace-ui a.side-link,.workspace-ui a.action-btn,.workspace-ui a.btn-modern,.dh-status,.dh-welcome a{text-decoration:none!important}
 
+
+/* Buttons placed in panel headings, attention boxes and empty states keep button styling. The generic
+   ".dh-panel-heading a / .dh-empty a" link rule above is more specific and would paint the label brand-red
+   (invisible on the brand-red button) at 11px. */
+.dh-panel-heading a.dh-button,.dh-attention a.dh-button,.dh-empty a.dh-button{color:#fff;font-size:12px}
+.dh-panel-heading a.dh-button-outline,.dh-attention a.dh-button-outline,.dh-empty a.dh-button-outline{color:var(--text-main)}

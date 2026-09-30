@@ -1575,6 +1575,15 @@
 
     </script>
 
+    <script>
+        // Bootstrap puts the backdrop on <body>. A modal rendered inside the page layout (which creates its own
+        // stacking context) would end up underneath it: visible but not clickable. Move it to <body> first.
+        document.addEventListener('show.bs.modal', function (event) {
+            if (event.target.parentElement !== document.body) {
+                document.body.appendChild(event.target);
+            }
+        });
+    </script>
     <script src="{{ asset('js/navigation.js') }}?v={{ filemtime(public_path('js/navigation.js')) }}" defer></script>
     @stack('modals')
     @yield('scripts')

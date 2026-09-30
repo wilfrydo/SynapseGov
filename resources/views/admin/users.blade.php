@@ -16,22 +16,6 @@
     </div>
 @endif
 
-@if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-circle me-2"></i>
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
 <!-- Users Table -->
 <div class="users-card">
     <div class="users-card-header">
@@ -67,13 +51,13 @@
                                         {{ substr($user->name, 0, 1) }}
                                     </div>
                                     <div>
-                                        <div style="font-weight: 600; color: #2c3e50;">{{ $user->name }}</div>
-                                        <div style="font-size: 0.8rem; color: #999;">{{ $user->email }}</div>
+                                        <div style="font-weight: 600; color: var(--text-main);">{{ $user->name }}</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-subtle);">{{ $user->email }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span style="color: #666; font-size: 0.9rem;">{{ $user->email }}</span>
+                                <span style="color: var(--text-muted); font-size: 0.9rem;">{{ $user->email }}</span>
                             </td>
                             <td>
                                 @php
@@ -81,7 +65,7 @@
                                         'admin' => ['bg' => '#fef2f2', 'color' => '#ef4444', 'label' => 'Admin'],
                                         'department_head' => ['bg' => '#fef3c7', 'color' => '#f59e0b', 'label' => 'Kepala Dept'],
                                         'staff' => ['bg' => '#f0f9ff', 'color' => '#0284c7', 'label' => 'Staff'],
-                                        'citizen' => ['bg' => '#f0fdf4', 'color' => '#10b981', 'label' => 'Warga']
+                                        'citizen' => ['bg' => '#f0fdf4', 'color' => '#047857', 'label' => 'Warga']
                                     ];
                                     $roleInfo = $roleColors[$user->role] ?? ['bg' => '#f8f9fa', 'color' => '#666', 'label' => ucfirst($user->role)];
                                 @endphp
@@ -90,13 +74,13 @@
                                 </span>
                             </td>
                             <td>
-                                <span style="color: #666; font-size: 0.9rem;">
+                                <span style="color: var(--text-muted); font-size: 0.9rem;">
                                     {{ $user->department ? $user->department->name : '-' }}
                                 </span>
                             </td>
                             <td>
                                 @if($user->is_active)
-                                    <span style="background: #f0fdf4; color: #10b981; padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
+                                    <span style="background: #f0fdf4; color: #047857; padding: 0.35rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
                                         Aktif
                                     </span>
                                 @else
@@ -115,7 +99,7 @@
                                 @endif
                             </td>
                             <td>
-                                <span style="color: #999; font-size: 0.9rem;">{{ $user->created_at ? $user->created_at->translatedFormat('d M Y') : '-' }}</span>
+                                <span style="color: var(--text-subtle); font-size: 0.9rem;">{{ $user->created_at ? $user->created_at->translatedFormat('d M Y') : '-' }}</span>
                             </td>
                         </tr>
                         @endforeach
