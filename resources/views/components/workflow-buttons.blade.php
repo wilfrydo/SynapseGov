@@ -89,7 +89,7 @@
                     @php
                         $isAssignedStaff = (int) $report->assigned_to === (int) $user->id;
                         $isInDept = (int) $report->department_id === (int) $user->department_id;
-                        $canAct = $isAssignedStaff || $isInDept;
+                        $canAct = $isAssignedStaff || ($isInDept && ! $report->assigned_to);
                         // Mirror the controller guards so staff never see a button that would be rejected
                         $canStart = $canAct && in_array($report->status, ['assigned', 'reviewed', 'needs_revision']); // WorkflowController::startWork
                         $canAskInfo = $isAssignedStaff && in_array($report->status, ['assigned', 'in_progress']); // WorkflowController::setAwaitingInfo
@@ -223,7 +223,7 @@
                 @php
                     $isAssignedStaff = (int) $report->assigned_to === (int) $user->id;
                     $isInDept = (int) $report->department_id === (int) $user->department_id;
-                    $canAct = $isAssignedStaff || $isInDept;
+                    $canAct = $isAssignedStaff || ($isInDept && ! $report->assigned_to);
                     // Same guards as the dropdown mode above
                     $canStart = $canAct && in_array($report->status, ['assigned', 'reviewed', 'needs_revision']);
                     $canAskInfo = $isAssignedStaff && in_array($report->status, ['assigned', 'in_progress']);

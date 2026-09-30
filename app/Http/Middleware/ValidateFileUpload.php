@@ -95,7 +95,6 @@ class ValidateFileUpload
     /**
      * Flatten nested array of files into a 1D list of UploadedFile instances.
      *
-     * @param array $files
      * @return array<int, UploadedFile>
      */
     private function flattenFiles(array $files): array
@@ -106,6 +105,7 @@ class ValidateFileUpload
                 $flattened[] = $item;
             }
         });
+
         return $flattened;
     }
 

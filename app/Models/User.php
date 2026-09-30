@@ -6,7 +6,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -148,8 +147,6 @@ class User extends Authenticatable
 
     /**
      * Get user's avatar URL
-     *
-     * @return string|null
      */
     public function getAvatarUrl(): ?string
     {
@@ -212,7 +209,6 @@ class User extends Authenticatable
      *
      * @param  string|null  $key
      * @param  mixed  $default
-     * @return mixed
      */
     public function getSettings($key = null, $default = null): mixed
     {

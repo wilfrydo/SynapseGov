@@ -6,8 +6,8 @@ use App\Models\AuditLog;
 use App\Models\Report;
 use App\Models\User;
 use App\Services\WorkflowService;
-use Illuminate\Http\RedirectResponse;
 use App\Support\Attachments;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -109,11 +109,13 @@ class WorkflowManagementController extends Controller
         return DB::transaction(function () use ($id, $user) {
             $report = Report::where(function ($q) use ($user) {
                 $q->where('department_id', $user->department_id)
-                  ->orWhere('assigned_to', $user->id);
+                    ->orWhere('assigned_to', $user->id);
             })->lockForUpdate()->findOrFail($id);
 
-            // Authorization: assigned staff or staff in department
-            if ($user->role === 'staff' && (int) $report->assigned_to !== (int) $user->id && (int) $report->department_id !== (int) $user->department_id) {
+            // Authorization: the assigned staff member, or department staff for an unassigned report
+            $isAssigned = (int) $report->assigned_to === (int) $user->id;
+            $isUnassignedInDept = ! $report->assigned_to && (int) $report->department_id === (int) $user->department_id;
+            if ($user->role === 'staff' && ! $isAssigned && ! $isUnassignedInDept) {
                 return back()->with('error', 'Anda tidak berhak mengirim laporan ini. Laporan belum ditugaskan kepada Anda.');
             }
 
@@ -133,16 +135,7 @@ class WorkflowManagementController extends Controller
                 $this->workflowService->verifyReport($report, $user);
 
                 // Audit: confirmed by staff
-                AuditLog::create([
-                    'auditable_type' => Report::class,
-                    'auditable_id' => $report->id,
-                    'user_id' => $user->id,
-                    'event' => 'confirmed_by_staff',
-                    'old_values' => null,
-                    'new_values' => ['status' => 'verified'],
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                ]);
+                AuditLog::record($report, 'confirmed_by_staff', null, ['status' => 'verified'], $user);
             }
 
             // Then forward to head
@@ -191,7 +184,7 @@ class WorkflowManagementController extends Controller
         return DB::transaction(function () use ($id, $assignedTo, $user, $request) {
             $report = Report::where(function ($q) use ($user) {
                 $q->where('department_id', $user->department_id)
-                  ->orWhere('assigned_to', $user->id);
+                    ->orWhere('assigned_to', $user->id);
             })->lockForUpdate()->findOrFail($id);
 
             // Status guard
@@ -205,16 +198,7 @@ class WorkflowManagementController extends Controller
             $this->workflowService->assignReport($report, $assignedTo, $user, $request->notes ?: 'Dikembalikan ke staff untuk tindak lanjut', $newStatus);
 
             // Audit: reviewed by head
-            AuditLog::create([
-                'auditable_type' => Report::class,
-                'auditable_id' => $report->id,
-                'user_id' => $user->id,
-                'event' => 'reviewed_by_head',
-                'old_values' => ['status' => $oldStatus],
-                'new_values' => ['status' => $newStatus, 'assigned_to' => $assignedTo->id],
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
+            AuditLog::record($report, 'reviewed_by_head', ['status' => $oldStatus], ['status' => $newStatus, 'assigned_to' => $assignedTo->id], $user);
 
             return back()->with('success', 'Laporan dikembalikan ke staff: '.$assignedTo->name.' untuk tindak lanjut.');
         });
@@ -236,10 +220,13 @@ class WorkflowManagementController extends Controller
         return DB::transaction(function () use ($id, $user, $request) {
             $report = Report::where(function ($q) use ($user) {
                 $q->where('department_id', $user->department_id)
-                  ->orWhere('assigned_to', $user->id);
+                    ->orWhere('assigned_to', $user->id);
             })->lockForUpdate()->findOrFail($id);
 
-            if ($user->role !== 'staff' || ((int) $report->assigned_to !== (int) $user->id && (int) $report->department_id !== (int) $user->department_id)) {
+            // Only the assigned officer submits results; an unassigned report may be closed out by its department's staff
+            $isAssigned = (int) $report->assigned_to === (int) $user->id;
+            $isUnassignedInDept = ! $report->assigned_to && (int) $report->department_id === (int) $user->department_id;
+            if ($user->role !== 'staff' || (! $isAssigned && ! $isUnassignedInDept)) {
                 return back()->with('error', 'Anda tidak berhak mengonfirmasi laporan ini ke admin.');
             }
 
@@ -249,9 +236,6 @@ class WorkflowManagementController extends Controller
                 return back()->with('error', 'Laporan dengan status "'.$report->status.'" tidak dapat dikonfirmasi ke admin.');
             }
 
-            $oldStatus = $report->status;
-            $oldAssignedTo = $report->assigned_to;
-
             // Handle evidence attachments
             $newAttachments = [];
             if ($request->hasFile('attachments')) {
@@ -260,47 +244,7 @@ class WorkflowManagementController extends Controller
                 }
             }
 
-            $currentAttachments = $report->attachments ?? [];
-            if (! empty($newAttachments)) {
-                $currentAttachments = array_merge($currentAttachments, $newAttachments);
-            }
-
-            // Close active assignment records for this report
-            $report->assignments()->where('status', 'active')->update([
-                'status' => 'completed',
-                'completed_at' => now(),
-                'notes' => $request->completion_notes,
-            ]);
-
-            $report->update([
-                'assigned_to' => null,
-                'status' => 'awaiting_admin_approval',
-                'last_activity_at' => now(),
-                'completion_notes' => $request->completion_notes,
-                'attachments' => $currentAttachments ?: null,
-            ]);
-
-            // Fire event for status change
-            event(new \App\Events\ReportStatusChanged($report, $oldStatus, 'awaiting_admin_approval', $user));
-
-            // Audit: confirmed to admin
-            AuditLog::create([
-                'auditable_type' => Report::class,
-                'auditable_id' => $report->id,
-                'user_id' => $user->id,
-                'event' => 'confirmed_to_admin',
-                'old_values' => [
-                    'assigned_to' => $oldAssignedTo,
-                    'status' => $oldStatus,
-                ],
-                'new_values' => [
-                    'assigned_to' => null,
-                    'status' => 'awaiting_admin_approval',
-                    'completion_notes' => $request->completion_notes,
-                ],
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
+            $this->workflowService->submitForApproval($report, $user, $request->completion_notes, $newAttachments);
 
             return back()->with('success', 'Laporan telah dikonfirmasi ke admin untuk persetujuan akhir.');
         });
@@ -346,20 +290,17 @@ class WorkflowManagementController extends Controller
             ]);
 
             // Audit: approved by admin
-            AuditLog::create([
-                'auditable_type' => Report::class,
-                'auditable_id' => $report->id,
-                'user_id' => $user->id,
-                'event' => 'approved_by_admin',
-                'old_values' => ['status' => $oldStatus],
-                'new_values' => [
+            AuditLog::record(
+                $report,
+                'approved_by_admin',
+                ['status' => $oldStatus],
+                [
                     'status' => 'resolved',
                     'resolved_at' => now(),
                     'final_notes' => $request->final_notes,
                 ],
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
+                $user
+            );
 
             // Fire event for status change
             event(new \App\Events\ReportStatusChanged($report, $oldStatus, 'resolved', $user));
@@ -404,20 +345,17 @@ class WorkflowManagementController extends Controller
             $this->workflowService->assignReport($report, $assignedTo, $user, $request->rejection_reason, 'needs_revision');
 
             // Audit: rejected by admin
-            AuditLog::create([
-                'auditable_type' => Report::class,
-                'auditable_id' => $report->id,
-                'user_id' => $user->id,
-                'event' => 'rejected_by_admin',
-                'old_values' => ['status' => $oldStatus],
-                'new_values' => [
+            AuditLog::record(
+                $report,
+                'rejected_by_admin',
+                ['status' => $oldStatus],
+                [
                     'status' => 'needs_revision',
                     'assigned_to' => $assignedTo->id,
                     'rejection_reason' => $request->rejection_reason,
                 ],
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
+                $user
+            );
 
             return back()->with('success', 'Laporan ditolak dan dikembalikan ke staff: '.$assignedTo->name.'.');
         });

@@ -160,16 +160,7 @@ class AdminDashboardController extends Controller
         $oldStatus = (bool) $user->is_active;
         $user->update(['is_active' => ! $oldStatus]);
 
-        \App\Models\AuditLog::create([
-            'auditable_type' => User::class,
-            'auditable_id' => $user->id,
-            'user_id' => Auth::id(),
-            'event' => $user->is_active ? 'user_activated' : 'user_deactivated',
-            'old_values' => ['is_active' => $oldStatus],
-            'new_values' => ['is_active' => $user->is_active],
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        \App\Models\AuditLog::record($user, $user->is_active ? 'user_activated' : 'user_deactivated', ['is_active' => $oldStatus], ['is_active' => $user->is_active]);
 
         $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
@@ -330,16 +321,7 @@ class AdminDashboardController extends Controller
 
         $report->update($request->only($fields));
 
-        \App\Models\AuditLog::create([
-            'auditable_type' => Report::class,
-            'auditable_id' => $report->id,
-            'user_id' => Auth::id(),
-            'event' => 'admin_report_updated',
-            'old_values' => $oldValues,
-            'new_values' => $report->only($fields),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        \App\Models\AuditLog::record($report, 'admin_report_updated', $oldValues, $report->only($fields));
 
         if ($oldValues['status'] !== $report->status) {
             event(new \App\Events\ReportStatusChanged($report, $oldValues['status'], $report->status, Auth::user()));
@@ -352,21 +334,16 @@ class AdminDashboardController extends Controller
     {
         $report = Report::findOrFail($id);
 
-        \App\Models\AuditLog::create([
-            'auditable_type' => Report::class,
-            'auditable_id' => $report->id,
-            'user_id' => Auth::id(),
-            'event' => 'admin_report_deleted',
-            'old_values' => [
+        \App\Models\AuditLog::record(
+            $report,
+            'admin_report_deleted',
+            [
                 'ticket_no' => $report->ticket_no,
                 'title' => $report->title,
                 'status' => $report->status,
                 'department_id' => $report->department_id,
-            ],
-            'new_values' => null,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+            ]
+        );
 
         $report->delete();
 
@@ -483,16 +460,7 @@ class AdminDashboardController extends Controller
             'last_activity_at' => now(),
         ]);
 
-        \App\Models\AuditLog::create([
-            'auditable_type' => Complaint::class,
-            'auditable_id' => $complaint->id,
-            'user_id' => Auth::id(),
-            'event' => 'complaint_confirmed',
-            'old_values' => ['status' => $oldStatus],
-            'new_values' => ['status' => 'pending'],
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        \App\Models\AuditLog::record($complaint, 'complaint_confirmed', ['status' => $oldStatus], ['status' => 'pending']);
 
         return redirect()->back()->with('success', 'Keluhan berhasil dikonfirmasi.');
     }
@@ -532,16 +500,7 @@ class AdminDashboardController extends Controller
             'last_activity_at' => now(),
         ]);
 
-        \App\Models\AuditLog::create([
-            'auditable_type' => Complaint::class,
-            'auditable_id' => $complaint->id,
-            'user_id' => Auth::id(),
-            'event' => 'complaint_assigned',
-            'old_values' => ['assigned_to' => $oldAssigned],
-            'new_values' => ['assigned_to' => $assignedTo->id, 'status' => 'investigating'],
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        \App\Models\AuditLog::record($complaint, 'complaint_assigned', ['assigned_to' => $oldAssigned], ['assigned_to' => $assignedTo->id, 'status' => 'investigating']);
 
         return redirect()->back()->with('success', 'Keluhan berhasil ditugaskan ke '.$assignedTo->name.'.');
     }
@@ -582,16 +541,7 @@ class AdminDashboardController extends Controller
             $complaint->update(['resolved_at' => now()]);
         }
 
-        \App\Models\AuditLog::create([
-            'auditable_type' => Complaint::class,
-            'auditable_id' => $complaint->id,
-            'user_id' => Auth::id(),
-            'event' => 'admin_complaint_updated',
-            'old_values' => $oldValues,
-            'new_values' => $complaint->only(array_keys($validated)),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        \App\Models\AuditLog::record($complaint, 'admin_complaint_updated', $oldValues, $complaint->only(array_keys($validated)));
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'complaint' => $complaint]);
@@ -604,21 +554,16 @@ class AdminDashboardController extends Controller
     {
         $complaint = Complaint::findOrFail($id);
 
-        \App\Models\AuditLog::create([
-            'auditable_type' => Complaint::class,
-            'auditable_id' => $complaint->id,
-            'user_id' => Auth::id(),
-            'event' => 'admin_complaint_deleted',
-            'old_values' => [
+        \App\Models\AuditLog::record(
+            $complaint,
+            'admin_complaint_deleted',
+            [
                 'ticket_no' => $complaint->ticket_no,
                 'title' => $complaint->title,
                 'status' => $complaint->status,
                 'department_id' => $complaint->department_id,
-            ],
-            'new_values' => null,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+            ]
+        );
 
         $complaint->delete();
 
