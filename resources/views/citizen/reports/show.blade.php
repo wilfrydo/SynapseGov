@@ -110,10 +110,10 @@
                     <h5 class="mb-0 fw-bold">Data Kurang - Mohon Lengkapi Laporan Anda</h5>
                 </div>
                 <div class="card-body">
-                    @if($report->rejection_reason)
+                    @if($report->info_request)
                     <div class="alert alert-warning mb-3">
-                        <strong>Catatan Admin / Data yang Diperlukan:</strong>
-                        <p class="mb-0 mt-1">{{ $report->rejection_reason }}</p>
+                        <strong>Catatan Petugas / Data yang Diperlukan:</strong>
+                        <p class="mb-0 mt-1">{{ $report->info_request }}</p>
                     </div>
                     @endif
                     <form action="{{ route('workflow.reports.provide_info', $report->id) }}" method="POST" enctype="multipart/form-data">

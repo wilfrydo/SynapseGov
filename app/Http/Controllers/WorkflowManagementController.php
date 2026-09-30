@@ -112,8 +112,10 @@ class WorkflowManagementController extends Controller
                     ->orWhere('assigned_to', $user->id);
             })->lockForUpdate()->findOrFail($id);
 
-            // Authorization: assigned staff or staff in department
-            if ($user->role === 'staff' && (int) $report->assigned_to !== (int) $user->id && (int) $report->department_id !== (int) $user->department_id) {
+            // Authorization: the assigned staff member, or department staff for an unassigned report
+            $isAssigned = (int) $report->assigned_to === (int) $user->id;
+            $isUnassignedInDept = ! $report->assigned_to && (int) $report->department_id === (int) $user->department_id;
+            if ($user->role === 'staff' && ! $isAssigned && ! $isUnassignedInDept) {
                 return back()->with('error', 'Anda tidak berhak mengirim laporan ini. Laporan belum ditugaskan kepada Anda.');
             }
 
@@ -221,7 +223,10 @@ class WorkflowManagementController extends Controller
                     ->orWhere('assigned_to', $user->id);
             })->lockForUpdate()->findOrFail($id);
 
-            if ($user->role !== 'staff' || ((int) $report->assigned_to !== (int) $user->id && (int) $report->department_id !== (int) $user->department_id)) {
+            // Only the assigned officer submits results; an unassigned report may be closed out by its department's staff
+            $isAssigned = (int) $report->assigned_to === (int) $user->id;
+            $isUnassignedInDept = ! $report->assigned_to && (int) $report->department_id === (int) $user->department_id;
+            if ($user->role !== 'staff' || (! $isAssigned && ! $isUnassignedInDept)) {
                 return back()->with('error', 'Anda tidak berhak mengonfirmasi laporan ini ke admin.');
             }
 

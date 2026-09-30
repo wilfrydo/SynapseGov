@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
  * @property string|null $resolution_notes
  * @property string|null $completion_notes
  * @property string|null $final_notes
+ * @property string|null $info_request
  * @property \Carbon\Carbon|null $resolved_at
  * @property \Carbon\Carbon|null $sla_due_at
  * @property bool $is_escalated
@@ -58,6 +59,7 @@ class Report extends Model
         'completion_notes',
         'final_notes',
         'rejection_reason',
+        'info_request',
         'resolved_at',
         'sla_due_at',
         'is_escalated',

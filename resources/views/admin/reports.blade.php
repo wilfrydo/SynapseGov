@@ -215,6 +215,18 @@
                 </div>
                 @endif
                 
+                @if($report->status === 'awaiting_info' && $report->info_request)
+                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 d-flex align-items-start">
+                    <div class="bg-white text-warning rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0 shadow-sm" style="width: 40px; height: 40px;">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="alert-heading fw-bold mb-1">Menunggu Data dari Pelapor</h6>
+                        <p class="mb-0 text-dark">{{ $report->info_request }}</p>
+                    </div>
+                </div>
+                @endif
+
                 @if($report->rejection_reason)
                 <div class="alert alert-danger rounded-4 border-0 shadow-sm mb-4 d-flex align-items-start">
                     <div class="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0 shadow-sm" style="width: 40px; height: 40px;">

@@ -114,19 +114,21 @@ class WorkflowController extends Controller
         $user = $this->user();
 
         $isAssignedStaff = (int) $report->assigned_to === (int) $user->id;
-        $isInDeptStaff = $user->isStaff() && ((int) $report->department_id === (int) $user->department_id);
+        // Staff of the report's department may pick up a report nobody is working on, but never a colleague's
+        $canClaim = $user->isStaff() && ! $report->assigned_to && (int) $report->department_id === (int) $user->department_id;
 
-        // Check if user is assigned to this report or is staff in the same department
-        if (! $isAssignedStaff && ! $isInDeptStaff && ! $user->isAdmin()) {
-            abort(403, 'Akses ditolak. Anda tidak ditugaskan untuk laporan ini.');
+        if (! $isAssignedStaff && ! $canClaim && ! $user->isAdmin()) {
+            abort(403, 'Akses ditolak. Laporan ini ditugaskan kepada petugas lain.');
         }
 
         if (! in_array($report->status, ['assigned', 'reviewed', 'needs_revision'])) {
             return redirect()->back()->with('error', 'Pengerjaan tidak dapat dimulai untuk laporan berstatus "'.$report->status.'".');
         }
 
-        if (! $report->assigned_to && $isInDeptStaff) {
-            $report->update(['assigned_to' => $user->id]);
+        if ($canClaim) {
+            // Record the pickup as a real assignment so the disposition history stays complete
+            $this->workflowService->assignReport($report, $user, $user, 'Diambil sendiri oleh petugas', $report->status);
+            $report->refresh();
         }
 
         $this->workflowService->startWork($report, $user);

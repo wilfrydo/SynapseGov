@@ -11,6 +11,7 @@ use App\Models\AuditLog;
 use App\Models\Comment;
 use App\Models\Report;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 class WorkflowService
@@ -88,9 +89,7 @@ class WorkflowService
 
             // Assign queue number on first verification
             if (empty($lockedReport->queue_no)) {
-                $lockedReport->update([
-                    'queue_no' => Report::nextQueueNo(),
-                ]);
+                $this->assignQueueNo($lockedReport);
             }
 
             $report->refresh();
@@ -103,6 +102,26 @@ class WorkflowService
 
             return $lockedReport;
         });
+    }
+
+    /**
+     * Give the report the next free queue number. queue_no is unique, so when two verifications
+     * pick the same number at once the loser retries with the following one instead of failing.
+     * Each attempt runs in a savepoint so a collision does not poison the outer transaction.
+     */
+    private function assignQueueNo(Report $report, int $attempts = 5): void
+    {
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                DB::transaction(fn () => $report->update(['queue_no' => Report::nextQueueNo()]));
+
+                return;
+            } catch (UniqueConstraintViolationException $e) {
+                if ($attempt >= $attempts) {
+                    throw $e;
+                }
+            }
+        }
     }
 
     /**
@@ -260,7 +279,7 @@ class WorkflowService
 
             $lockedReport->update([
                 'status' => 'awaiting_info',
-                'rejection_reason' => $reason,
+                'info_request' => $reason,
                 'last_activity_at' => now(),
             ]);
 
@@ -362,6 +381,7 @@ class WorkflowService
 
             $lockedReport->update([
                 'status' => 'submitted',
+                'info_request' => null,
                 'attachments' => $currentAttachments ?: null,
                 'last_activity_at' => now(),
             ]);
