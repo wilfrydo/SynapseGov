@@ -39,6 +39,23 @@ class LoginController extends Controller
     }
 
     /**
+     * Reject deactivated accounts. Runs only after the password matched, so it never reveals
+     * whether an email is registered.
+     */
+    protected function authenticated(\Illuminate\Http\Request $request, $user)
+    {
+        if ($user->is_active === false) {
+            $this->guard()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                $this->username() => 'Akun Anda telah dinonaktifkan. Hubungi administrator.',
+            ]);
+        }
+    }
+
+    /**
      * Log the user out of the application.
      *
      * @return \Illuminate\Http\RedirectResponse

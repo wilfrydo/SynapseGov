@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Complaint;
 use App\Models\Report;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
 {
@@ -46,11 +46,11 @@ class FileController extends Controller
 
             $filePath = $this->getFilePath($reportable, $filename);
 
-            if (! $filePath || ! Storage::exists($filePath)) {
+            if (! $filePath) {
                 abort(404, 'Berkas tidak ditemukan.');
             }
 
-            return Storage::download($filePath, $filename);
+            return response()->download($filePath, basename($filePath));
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -94,7 +94,7 @@ class FileController extends Controller
 
         $filePath = $this->getFilePath($reportable, $filename);
 
-        if (! $filePath || ! Storage::exists($filePath)) {
+        if (! $filePath) {
             abort(404, 'Berkas tidak ditemukan.');
         }
 
@@ -106,12 +106,11 @@ class FileController extends Controller
             abort(400, 'Format berkas tidak mendukung pratinjau.');
         }
 
-        $file = Storage::get($filePath);
-        $mimeType = $extension === 'pdf' ? 'application/pdf' : Storage::mimeType($filePath);
+        $mimeType = $extension === 'pdf' ? 'application/pdf' : (mime_content_type($filePath) ?: 'application/octet-stream');
 
-        return response($file, 200, [
+        return response()->file($filePath, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="'.$filename.'"',
+            'Content-Disposition' => 'inline; filename="'.basename($filePath).'"',
         ]);
     }
 
@@ -149,13 +148,8 @@ class FileController extends Controller
             }
 
             foreach ($files as $file) {
-                $normalized = str_replace('\\', '/', (string) $file);
-                $relativePath = str_starts_with($normalized, 'public/') ? substr($normalized, 7) : $normalized;
-                $fullPath = storage_path('app/public/'.$relativePath);
-                if (! file_exists($fullPath)) {
-                    $fullPath = storage_path('app/'.$normalized);
-                }
-                if (file_exists($fullPath)) {
+                $fullPath = Attachments::path($file);
+                if ($fullPath) {
                     $zip->addFile($fullPath, basename($file));
                 }
             }
@@ -178,13 +172,8 @@ class FileController extends Controller
         $fileList = [];
 
         foreach ($files as $file) {
-            $normalized = str_replace('\\', '/', (string) $file);
-            $relativePath = str_starts_with($normalized, 'public/') ? substr($normalized, 7) : $normalized;
-            $fullPath = storage_path('app/public/'.$relativePath);
-            if (! file_exists($fullPath)) {
-                $fullPath = storage_path('app/'.$normalized);
-            }
-            if (file_exists($fullPath)) {
+            $fullPath = Attachments::path($file);
+            if ($fullPath) {
                 $fileList[] = [
                     'name' => basename($file),
                     'path' => $file,
@@ -215,14 +204,9 @@ class FileController extends Controller
         $files = [];
 
         foreach ($attachments as $file) {
-            $normalized = str_replace('\\', '/', (string) $file);
-            $relativePath = str_starts_with($normalized, 'public/') ? substr($normalized, 7) : $normalized;
-            $fullPath = storage_path('app/public/'.$relativePath);
-            if (! file_exists($fullPath)) {
-                $fullPath = storage_path('app/'.$normalized);
-            }
+            $fullPath = Attachments::path($file);
 
-            if (file_exists($fullPath)) {
+            if ($fullPath) {
                 $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                 $fileInfo = [
                     'name' => basename($file),
@@ -258,7 +242,7 @@ class FileController extends Controller
             }
 
             if (basename($normalized) === $cleanFilename) {
-                return str_starts_with($normalized, 'public/') ? $normalized : 'public/'.$normalized;
+                return Attachments::path($normalized);
             }
         }
 

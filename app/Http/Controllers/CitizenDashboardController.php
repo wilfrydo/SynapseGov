@@ -7,6 +7,7 @@ use App\Models\Complaint;
 use App\Models\Department;
 use App\Models\Report;
 use App\Models\User;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -99,8 +100,7 @@ class CitizenDashboardController extends Controller
         $attachments = [];
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('public/attachments/reports');
-                $attachments[] = str_replace('public/', '', $path);
+                $attachments[] = Attachments::store($file, 'reports');
             }
         }
 
@@ -142,8 +142,7 @@ class CitizenDashboardController extends Controller
         $attachments = [];
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('public/attachments/complaints');
-                $attachments[] = str_replace('public/', '', $path);
+                $attachments[] = Attachments::store($file, 'complaints');
             }
         }
 

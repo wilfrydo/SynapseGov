@@ -6,9 +6,9 @@ use App\Models\AuditLog;
 use App\Models\Complaint;
 use App\Models\Department;
 use App\Models\User;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ComplaintController extends Controller
@@ -55,8 +55,7 @@ class ComplaintController extends Controller
         $attachments = [];
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('public/attachments/complaints');
-                $attachments[] = str_replace('public/', '', $path);
+                $attachments[] = Attachments::store($file, 'complaints');
             }
         }
 
@@ -155,9 +154,7 @@ class ComplaintController extends Controller
         // Clean up file attachments
         if (! empty($complaint->attachments) && is_array($complaint->attachments)) {
             foreach ($complaint->attachments as $attachment) {
-                if (Storage::disk('public')->exists($attachment)) {
-                    Storage::disk('public')->delete($attachment);
-                }
+                Attachments::delete($attachment);
             }
         }
 

@@ -7,8 +7,8 @@ use App\Models\Complaint;
 use App\Models\Department;
 use App\Models\Report;
 use App\Models\User;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -57,8 +57,7 @@ class ReportController extends Controller
         $attachments = [];
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('public/attachments/reports');
-                $attachments[] = str_replace('public/', '', $path);
+                $attachments[] = Attachments::store($file, 'reports');
             }
         }
 
@@ -170,9 +169,7 @@ class ReportController extends Controller
         // Clean up file attachments
         if (! empty($report->attachments) && is_array($report->attachments)) {
             foreach ($report->attachments as $attachment) {
-                if (Storage::disk('public')->exists($attachment)) {
-                    Storage::disk('public')->delete($attachment);
-                }
+                Attachments::delete($attachment);
             }
         }
 

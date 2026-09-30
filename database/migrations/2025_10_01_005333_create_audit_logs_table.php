@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
             $table->morphs('auditable'); // auditable_id, auditable_type (reports/complaints)
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade'); // null = system action (e.g. SLA escalation)
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete(); // null = system action or deleted user; the audit row itself is kept
             $table->string('event'); // created, updated, assigned, status_changed, etc.
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();

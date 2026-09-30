@@ -7,6 +7,7 @@ use App\Models\Report;
 use App\Models\User;
 use App\Services\WorkflowService;
 use Illuminate\Http\RedirectResponse;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -255,8 +256,7 @@ class WorkflowManagementController extends Controller
             $newAttachments = [];
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
-                    $path = $file->store('public/attachments/resolutions');
-                    $newAttachments[] = str_replace('public/', '', $path);
+                    $newAttachments[] = Attachments::store($file, 'resolutions');
                 }
             }
 

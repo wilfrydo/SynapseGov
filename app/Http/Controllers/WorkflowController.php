@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\WorkflowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -167,8 +168,7 @@ class WorkflowController extends Controller
         $attachments = [];
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('attachments/comments', 'public');
-                $attachments[] = $path;
+                $attachments[] = Attachments::store($file, 'comments');
             }
         }
 
@@ -315,8 +315,7 @@ class WorkflowController extends Controller
         $attachments = [];
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('public/attachments/reports');
-                $attachments[] = str_replace('public/', '', $path);
+                $attachments[] = Attachments::store($file, 'reports');
             }
         }
 

@@ -6,6 +6,7 @@ use App\Models\Complaint;
 use App\Models\Department;
 use App\Models\Report;
 use App\Models\User;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -378,8 +379,8 @@ class AdminDashboardController extends Controller
 
             if (is_array($report->attachments)) {
                 foreach ($report->attachments as $relPath) {
-                    $abs = storage_path('app/public/'.$relPath);
-                    if (file_exists($abs)) {
+                    $abs = Attachments::path($relPath);
+                    if ($abs) {
                         $zip->addFile($abs, 'attachments/'.basename($relPath));
                     }
                 }
