@@ -116,6 +116,21 @@ class Report extends Model
         return self::STATUS_LABELS[$status] ?? ucfirst(str_replace('_', ' ', (string) $status));
     }
 
+    /**
+     * Indonesian display labels for priorities, shared by reports and complaints.
+     */
+    public const PRIORITY_LABELS = [
+        'low' => 'Rendah',
+        'medium' => 'Normal',
+        'high' => 'Tinggi',
+        'urgent' => 'Mendesak',
+    ];
+
+    public static function priorityLabel(?string $priority): string
+    {
+        return self::PRIORITY_LABELS[$priority] ?? ucfirst((string) $priority);
+    }
+
     protected static function boot()
     {
         parent::boot();

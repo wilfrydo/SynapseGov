@@ -62,7 +62,7 @@
                 <dl class="dh-profile-details">
                     <dt>Email</dt><dd>{{ $member->email }}</dd>
                     <dt>Telepon</dt><dd>{{ $member->phone ?: 'Belum ditambahkan' }}</dd>
-                    <dt>Bergabung</dt><dd>{{ $member->created_at->format('d M Y') }}</dd>
+                    <dt>Bergabung</dt><dd>{{ $member->created_at->translatedFormat('d M Y') }}</dd>
                 </dl>
             </div>
             <div class="modal-footer">

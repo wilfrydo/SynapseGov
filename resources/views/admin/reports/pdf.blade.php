@@ -29,7 +29,7 @@
 <body>
     <div class="header">
         <h1>{{ $title }}</h1>
-        <p>Generated on: {{ now()->format('d M Y, H:i:s') }}</p>
+        <p>Generated on: {{ now()->translatedFormat('d M Y, H:i:s') }}</p>
     </div>
 
     <div class="section">
@@ -62,7 +62,7 @@
         
         <div class="field">
             <span class="label">Priority:</span>
-            <span class="priority-badge priority-{{ $report->priority }}">{{ ucfirst($report->priority) }}</span>
+            <span class="priority-badge priority-{{ $report->priority }}">{{ \App\Models\Report::priorityLabel($report->priority) }}</span>
         </div>
         
         <div class="field">
@@ -91,12 +91,12 @@
         
         <div class="field">
             <span class="label">Created At:</span>
-            <span class="value">{{ $report->created_at->format('d M Y, H:i:s') }}</span>
+            <span class="value">{{ $report->created_at->translatedFormat('d M Y, H:i:s') }}</span>
         </div>
         
         <div class="field">
             <span class="label">Last Updated:</span>
-            <span class="value">{{ $report->updated_at->format('d M Y, H:i:s') }}</span>
+            <span class="value">{{ $report->updated_at->translatedFormat('d M Y, H:i:s') }}</span>
         </div>
     </div>
 
@@ -129,7 +129,7 @@
         
         <div class="field">
             <span class="label">SLA Due:</span>
-            <span class="value">{{ $report->sla_due_at ? $report->sla_due_at->format('d M Y, H:i:s') : 'N/A' }}</span>
+            <span class="value">{{ $report->sla_due_at ? $report->sla_due_at->translatedFormat('d M Y, H:i:s') : 'N/A' }}</span>
         </div>
         
         <div class="field">

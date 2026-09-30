@@ -11,7 +11,7 @@
                 <div class="modal-body">
                     <div class="alert alert-success">
                         <i class="fas fa-check-circle"></i>
-                        Laporan akan disetujui dan ditutup. User akan mendapat notifikasi.
+                        Laporan akan disetujui dan berstatus Selesai. Pelapor akan diminta mengonfirmasi penyelesaian.
                     </div>
                     <div class="mb-3">
                         <label for="final_notes{{ $report->id }}" class="form-label">Catatan Final (Opsional):</label>

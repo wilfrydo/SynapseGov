@@ -3,7 +3,7 @@
 @section('content')
 @php
     $statusLabels = \App\Models\Report::STATUS_LABELS;
-    $priorityLabels = ['low' => 'Rendah', 'medium' => 'Normal', 'high' => 'Tinggi', 'urgent' => 'Mendesak'];
+    $priorityLabels = \App\Models\Report::PRIORITY_LABELS;
 @endphp
 <div class="dh-workspace">
 @include('administration.head.heading', ['heading' => 'Selamat datang, '.auth()->user()->name.'.', 'description' => 'Lihat perkembangan layanan dan tentukan langkah tim hari ini.'])
@@ -19,7 +19,7 @@
 <div class="dh-columns">
 <section class="dh-panel"><div class="dh-panel-heading"><div><h2>Laporan terbaru</h2><p>Perkembangan terbaru dari masyarakat.</p></div><a href="{{ route('administration.reports') }}">Lihat semua <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
 @forelse($recentReports as $report)
-<a class="dh-report-row" href="{{ route('administration.reports', ['q' => $report->ticket_no]) }}"><span class="dh-file-icon"><i class="far fa-file-lines" aria-hidden="true"></i></span><div class="dh-row-main"><small>{{ $report->ticket_no }} · {{ $report->created_at->format('d M Y') }}</small><h3>{{ $report->title }}</h3><span>{{ $report->assignedUser?->name ?? 'Belum ada penanggung jawab' }}</span></div><span class="dh-status dh-status-{{ $report->status }}">{{ $statusLabels[$report->status] ?? $report->status }}</span></a>
+<a class="dh-report-row" href="{{ route('administration.reports', ['q' => $report->ticket_no]) }}"><span class="dh-file-icon"><i class="far fa-file-lines" aria-hidden="true"></i></span><div class="dh-row-main"><small>{{ $report->ticket_no }} · {{ $report->created_at->translatedFormat('d M Y') }}</small><h3>{{ $report->title }}</h3><span>{{ $report->assignedUser?->name ?? 'Belum ada penanggung jawab' }}</span></div><span class="dh-status dh-status-{{ $report->status }}">{{ $statusLabels[$report->status] ?? $report->status }}</span></a>
 @empty
 <div class="dh-empty"><i class="far fa-folder-open" aria-hidden="true"></i><h3>Belum ada laporan</h3><p>Laporan untuk departemen Anda akan tampil di sini.</p></div>
 @endforelse

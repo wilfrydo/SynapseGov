@@ -145,6 +145,37 @@ class AdminDashboardController extends Controller
         }
     }
 
+    /**
+     * Activate or deactivate a user account. Deactivated users cannot log in
+     * and are signed out on their next request (see EnsureAccountIsActive).
+     */
+    public function toggleUserStatus($id)
+    {
+        $user = User::findOrFail($id);
+
+        if ((int) $user->id === (int) Auth::id()) {
+            return back()->with('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri.');
+        }
+
+        $oldStatus = (bool) $user->is_active;
+        $user->update(['is_active' => ! $oldStatus]);
+
+        \App\Models\AuditLog::create([
+            'auditable_type' => User::class,
+            'auditable_id' => $user->id,
+            'user_id' => Auth::id(),
+            'event' => $user->is_active ? 'user_activated' : 'user_deactivated',
+            'old_values' => ['is_active' => $oldStatus],
+            'new_values' => ['is_active' => $user->is_active],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+        return back()->with('success', 'Akun "'.$user->name.'" berhasil '.$statusText.'.');
+    }
+
     public function departments()
     {
         $search = $this->adminSearch();
@@ -536,7 +567,7 @@ class AdminDashboardController extends Controller
             'department_id' => 'sometimes|nullable|exists:departments,id',
             'assigned_to' => 'sometimes|nullable|exists:users,id',
             'location' => 'sometimes|nullable|string|max:255',
-            'status' => 'nullable|in:submitted,pending,investigating,in_progress,resolved,closed,rejected',
+            'status' => ['nullable', \Illuminate\Validation\Rule::in($complaint->allowedStatuses())],
             'resolution_notes' => 'nullable|string|max:2000',
         ]);
 

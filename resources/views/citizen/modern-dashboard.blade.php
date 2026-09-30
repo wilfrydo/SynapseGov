@@ -355,7 +355,7 @@
                 <div class="cz-ticket-meta">
                     <span>{{ $report->ticket_no }}</span>
                     <span class="cz-dot"></span>
-                    <span>{{ $report->created_at->format('d M Y') }}</span>
+                    <span>{{ $report->created_at->translatedFormat('d M Y') }}</span>
                 </div>
                 <h3 class="cz-ticket-title">{{ $report->title }}</h3>
                 <span class="cz-ticket-dept"><i class="fas fa-building"></i> {{ $report->department?->name ?? 'Umum' }}</span>
@@ -392,7 +392,7 @@
                 <span class="cz-complaint-dot {{ $complaint->status }}"></span>
                 <div class="cz-complaint-body">
                     <h4 class="cz-complaint-title">{{ $complaint->title }}</h4>
-                    <span class="cz-complaint-date">{{ $complaint->created_at->format('d M Y') }}</span>
+                    <span class="cz-complaint-date">{{ $complaint->created_at->translatedFormat('d M Y') }}</span>
                 </div>
                 <span class="cz-complaint-status">{{ $statusLabels[$complaint->status] ?? $complaint->status }}</span>
             </a>

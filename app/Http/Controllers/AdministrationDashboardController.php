@@ -464,6 +464,11 @@ class AdministrationDashboardController extends Controller
         return DB::transaction(function () use ($id, $request, $user) {
             $complaint = Complaint::where('department_id', $user->department_id)->lockForUpdate()->findOrFail($id);
 
+            // Only a complaint that is being handled can be closed out (see Complaint::STATUS_TRANSITIONS)
+            if (! $complaint->canBeResolved()) {
+                return redirect()->back()->with('error', 'Keluhan harus ditugaskan dan diinvestigasi terlebih dahulu sebelum diselesaikan.');
+            }
+
             $oldStatus = $complaint->status;
             $complaint->update([
                 'status' => 'resolved',

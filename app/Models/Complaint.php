@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\InvalidStatusTransition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -40,6 +41,35 @@ class Complaint extends Model
         'last_activity_at' => 'datetime',
     ];
 
+    /**
+     * Complaint workflow: current status => statuses it may move to. Enforced in the updating hook.
+     * 'verified', 'assigned' and 'in_progress' are legacy complaint statuses, handled like 'investigating'.
+     * Statuses not listed as keys (including 'rejected') are terminal.
+     */
+    public const STATUS_TRANSITIONS = [
+        'submitted' => ['pending', 'investigating', 'rejected'],
+        'pending' => ['investigating', 'rejected'],
+        'verified' => ['investigating', 'rejected'],
+        'assigned' => ['investigating', 'resolved', 'rejected'],
+        'in_progress' => ['investigating', 'resolved', 'rejected'],
+        'investigating' => ['resolved', 'rejected'],
+        'resolved' => ['closed', 'investigating'],
+        'closed' => ['investigating'],
+    ];
+
+    /**
+     * Statuses this complaint may be set to right now (its current status plus valid next steps).
+     */
+    public function allowedStatuses(): array
+    {
+        return array_merge([$this->status], self::STATUS_TRANSITIONS[$this->status] ?? []);
+    }
+
+    public function canBeResolved(): bool
+    {
+        return in_array('resolved', self::STATUS_TRANSITIONS[$this->status] ?? [], true);
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -58,6 +88,14 @@ class Complaint extends Model
         });
 
         static::updating(function ($complaint) {
+            if ($complaint->isDirty('status')) {
+                $from = $complaint->getOriginal('status');
+
+                if (! in_array($complaint->status, self::STATUS_TRANSITIONS[$from] ?? [], true)) {
+                    throw new InvalidStatusTransition($from, $complaint->status, 'Keluhan');
+                }
+            }
+
             $complaint->last_activity_at = now();
 
             // Automatically recalculate SLA due date when priority changes

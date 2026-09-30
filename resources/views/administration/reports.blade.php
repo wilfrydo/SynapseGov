@@ -3,7 +3,7 @@
 @section('content')
 @php
     $statusLabels = \App\Models\Report::STATUS_LABELS;
-    $priorityLabels = ['low' => 'Rendah', 'medium' => 'Normal', 'high' => 'Tinggi', 'urgent' => 'Mendesak'];
+    $priorityLabels = \App\Models\Report::PRIORITY_LABELS;
 @endphp
 <div class="dh-workspace">
 @include('administration.head.heading', ['heading' => 'Laporan masyarakat', 'description' => 'Pantau setiap laporan yang ditugaskan kepada Anda dan tindak lanjuti progresnya.'])
@@ -72,11 +72,11 @@
                     <td>
                         <span class="dh-assignee">{{ $ticket->assignedUser?->name ?? 'Belum ditugaskan' }}</span>
                         @if($ticket->sla_due_at && !in_array($ticket->status, ['resolved','closed','rejected']))
-                            <small class="{{ $ticket->sla_due_at->isPast() ? 'text-danger' : 'dh-muted' }}">SLA {{ $ticket->sla_due_at->format('d M, H:i') }}</small>
+                            <small class="{{ $ticket->sla_due_at->isPast() ? 'text-danger' : 'dh-muted' }}">SLA {{ $ticket->sla_due_at->translatedFormat('d M, H:i') }}</small>
                         @endif
                     </td>
                     <td class="text-nowrap">
-                        {{ $ticket->created_at->format('d M Y') }}
+                        {{ $ticket->created_at->translatedFormat('d M Y') }}
                         <small class="dh-muted">{{ $ticket->created_at->format('H:i') }} WIB</small>
                     </td>
                     <td>

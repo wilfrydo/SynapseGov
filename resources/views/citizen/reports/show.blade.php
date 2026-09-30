@@ -49,7 +49,7 @@
                                 <label class="detail-label"><i class="fas fa-flag me-2"></i>Prioritas</label>
                                 <div class="detail-value">
                                     <span class="badge badge-priority-{{ $report->priority }}">
-                                        {{ ucfirst($report->priority) }}
+                                        {{ \App\Models\Report::priorityLabel($report->priority) }}
                                     </span>
                                 </div>
                             </div>
@@ -71,13 +71,13 @@
                         <div class="col-md-6">
                             <div class="detail-item">
                                 <label class="detail-label"><i class="fas fa-clock me-2"></i>Dibuat</label>
-                                <div class="detail-value">{{ $report->created_at->format('d F Y, H:i') }}</div>
+                                <div class="detail-value">{{ $report->created_at->translatedFormat('d F Y, H:i') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="detail-item">
                                 <label class="detail-label"><i class="fas fa-sync me-2"></i>Terakhir Update</label>
-                                <div class="detail-value">{{ $report->updated_at->format('d F Y, H:i') }}</div>
+                                <div class="detail-value">{{ $report->updated_at->translatedFormat('d F Y, H:i') }}</div>
                             </div>
                         </div>
                         @if($report->assignedUser)
@@ -248,7 +248,7 @@
                         @if($report->resolved_at)
                         <small class="text-muted">
                             <i class="fas fa-calendar-check me-1"></i>
-                            Diselesaikan pada: {{ $report->resolved_at->format('d F Y, H:i') }}
+                            Diselesaikan pada: {{ $report->resolved_at->translatedFormat('d F Y, H:i') }}
                         </small>
                         @endif
                     </div>
@@ -300,7 +300,7 @@
                             </div>
                             <div class="timeline-details">
                                 <h6>Laporan Dibuat</h6>
-                                <small>{{ $report->created_at->format('d F Y, H:i') }}</small>
+                                <small>{{ $report->created_at->translatedFormat('d F Y, H:i') }}</small>
                             </div>
                         </div>
                         
@@ -311,7 +311,7 @@
                             </div>
                             <div class="timeline-details">
                                 <h6>Laporan Diproses</h6>
-                                <small>{{ $report->updated_at->format('d F Y, H:i') }}</small>
+                                <small>{{ $report->updated_at->translatedFormat('d F Y, H:i') }}</small>
                             </div>
                         </div>
                         @endif
@@ -323,7 +323,7 @@
                             </div>
                             <div class="timeline-details">
                                 <h6>Laporan Diselesaikan</h6>
-                                <small>{{ $report->resolved_at ? $report->resolved_at->format('d F Y, H:i') : $report->updated_at->format('d F Y, H:i') }}</small>
+                                <small>{{ $report->resolved_at ? $report->resolved_at->translatedFormat('d F Y, H:i') : $report->updated_at->translatedFormat('d F Y, H:i') }}</small>
                             </div>
                         </div>
                         @endif

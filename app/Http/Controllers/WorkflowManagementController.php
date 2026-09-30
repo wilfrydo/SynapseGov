@@ -364,7 +364,7 @@ class WorkflowManagementController extends Controller
             // Fire event for status change
             event(new \App\Events\ReportStatusChanged($report, $oldStatus, 'resolved', $user));
 
-            return back()->with('success', 'Laporan telah disetujui dan ditutup. User akan mendapat notifikasi.');
+            return back()->with('success', 'Laporan disetujui dan berstatus Selesai. Pelapor akan diminta mengonfirmasi penyelesaian.');
         });
     }
 

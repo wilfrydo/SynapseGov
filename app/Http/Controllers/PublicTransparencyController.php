@@ -88,7 +88,7 @@ class PublicTransparencyController extends Controller
         return [
             'overall' => $this->summarize('Semua OPD', $totals),
             'departments' => $departments,
-            'generated_at' => now()->format('d M Y, H:i'),
+            'generated_at' => now()->translatedFormat('d M Y, H:i'),
         ];
     }
 
@@ -125,9 +125,9 @@ class PublicTransparencyController extends Controller
             'status' => $ticket->status,
             'status_label' => Report::statusLabel($ticket->status),
             'step' => $this->progressStep($ticket->status),
-            'created_at' => $ticket->created_at?->format('d M Y, H:i'),
-            'updated_at' => ($ticket->last_activity_at ?? $ticket->updated_at)?->format('d M Y, H:i'),
-            'sla_due_at' => $ticket->sla_due_at?->format('d M Y, H:i'),
+            'created_at' => $ticket->created_at?->translatedFormat('d M Y, H:i'),
+            'updated_at' => ($ticket->last_activity_at ?? $ticket->updated_at)?->translatedFormat('d M Y, H:i'),
+            'sla_due_at' => $ticket->sla_due_at?->translatedFormat('d M Y, H:i'),
             'sla_state' => $slaState,
         ];
     }

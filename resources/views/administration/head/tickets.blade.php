@@ -3,7 +3,7 @@
 @section('content')
 @php
     $statusLabels = \App\Models\Report::STATUS_LABELS;
-    $priorityLabels = ['low' => 'Rendah', 'medium' => 'Normal', 'high' => 'Tinggi', 'urgent' => 'Mendesak'];
+    $priorityLabels = \App\Models\Report::PRIORITY_LABELS;
 @endphp
 <div class="dh-workspace">
 @include('administration.head.heading', ['heading' => $isReport ? 'Laporan masyarakat' : 'Keluhan & aspirasi', 'description' => $isReport ? 'Pantau setiap laporan, tentukan penanggung jawab, dan tindak lanjuti progresnya.' : 'Dengarkan kebutuhan masyarakat dan koordinasikan penanganannya bersama tim.'])
@@ -25,7 +25,7 @@
 <div class="dh-results"><span>{{ number_format($tickets->total()) }} {{ $isReport ? 'laporan' : 'keluhan' }} ditemukan @if(request('overdue')) · Melewati SLA @endif</span><span>Terbaru lebih dahulu</span></div>
 <div class="dh-table-wrap"><table class="dh-table"><thead><tr><th scope="col">{{ $isReport ? 'Laporan' : 'Keluhan' }}</th><th scope="col">Status & prioritas</th><th scope="col">Penanggung jawab</th><th scope="col">Tanggal masuk</th><th scope="col">Tindakan</th></tr></thead><tbody>
 @forelse($tickets as $ticket)
-<tr><td><small class="dh-ticket-no">{{ $ticket->ticket_no }}</small><button class="dh-title-button" data-bs-toggle="modal" data-bs-target="#ticketDetail{{ $ticket->id }}">{{ $ticket->title }}</button><span class="dh-muted">{{ $ticket->user?->name ?? 'Pengguna dihapus' }} · {{ $ticket->category }}</span></td><td><span class="dh-status dh-status-{{ $ticket->status }}">{{ $statusLabels[$ticket->status] ?? $ticket->status }}</span><small class="dh-priority dh-priority-{{ $ticket->priority }}"><i class="fas fa-circle" aria-hidden="true"></i> {{ $priorityLabels[$ticket->priority] ?? $ticket->priority }}</small></td><td><span class="dh-assignee">{{ $ticket->assignedUser?->name ?? 'Belum ditugaskan' }}</span>@if($ticket->sla_due_at && !in_array($ticket->status, ['resolved','closed','rejected']))<small class="{{ $ticket->sla_due_at->isPast() ? 'text-danger' : 'dh-muted' }}">SLA {{ $ticket->sla_due_at->format('d M, H:i') }}</small>@endif</td><td class="text-nowrap">{{ $ticket->created_at->format('d M Y') }}<small class="dh-muted">{{ $ticket->created_at->format('H:i') }} WIB</small></td><td><div class="d-flex align-items-center gap-2 flex-wrap">@if($isReport)<x-workflow-buttons :report="$ticket" :user="auth()->user()" :staff-list="$staffList" mode="buttons" />@endif<button class="dh-button dh-button-outline" data-bs-toggle="modal" data-bs-target="#ticketDetail{{ $ticket->id }}">Lihat detail <i class="fas fa-arrow-right" aria-hidden="true"></i></button></div></td></tr>
+<tr><td><small class="dh-ticket-no">{{ $ticket->ticket_no }}</small><button class="dh-title-button" data-bs-toggle="modal" data-bs-target="#ticketDetail{{ $ticket->id }}">{{ $ticket->title }}</button><span class="dh-muted">{{ $ticket->user?->name ?? 'Pengguna dihapus' }} · {{ $ticket->category }}</span></td><td><span class="dh-status dh-status-{{ $ticket->status }}">{{ $statusLabels[$ticket->status] ?? $ticket->status }}</span><small class="dh-priority dh-priority-{{ $ticket->priority }}"><i class="fas fa-circle" aria-hidden="true"></i> {{ $priorityLabels[$ticket->priority] ?? $ticket->priority }}</small></td><td><span class="dh-assignee">{{ $ticket->assignedUser?->name ?? 'Belum ditugaskan' }}</span>@if($ticket->sla_due_at && !in_array($ticket->status, ['resolved','closed','rejected']))<small class="{{ $ticket->sla_due_at->isPast() ? 'text-danger' : 'dh-muted' }}">SLA {{ $ticket->sla_due_at->translatedFormat('d M, H:i') }}</small>@endif</td><td class="text-nowrap">{{ $ticket->created_at->translatedFormat('d M Y') }}<small class="dh-muted">{{ $ticket->created_at->format('H:i') }} WIB</small></td><td><div class="d-flex align-items-center gap-2 flex-wrap">@if($isReport)<x-workflow-buttons :report="$ticket" :user="auth()->user()" :staff-list="$staffList" mode="buttons" />@endif<button class="dh-button dh-button-outline" data-bs-toggle="modal" data-bs-target="#ticketDetail{{ $ticket->id }}">Lihat detail <i class="fas fa-arrow-right" aria-hidden="true"></i></button></div></td></tr>
 @empty
 <tr><td colspan="5"><div class="dh-empty"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><h3>{{ request()->hasAny(['q','status','priority','overdue']) ? 'Tidak ada hasil yang cocok' : 'Belum ada data' }}</h3><p>Coba ubah filter atau periksa kembali nanti.</p><a href="{{ route('administration.'.$type) }}">Tampilkan semua {{ $isReport ? 'laporan' : 'keluhan' }}</a></div></td></tr>
 @endforelse
@@ -72,12 +72,16 @@
             <button class="dh-button" style="white-space: nowrap;" @disabled($staffList->isEmpty())>Simpan</button>
         </div>
     </form>
+    @if($ticket->canBeResolved())
     <form action="{{ route('administration.complaints.resolve', $ticket->id) }}" method="POST">
         @csrf
         <label for="complaintResolution{{ $ticket->id }}" class="form-label font-weight-bold">Tandai Selesai</label>
         <textarea class="form-control mb-2" id="complaintResolution{{ $ticket->id }}" name="resolution_notes" rows="2" placeholder="Catatan hasil penanganan keluhan masyarakat..." required></textarea>
         <button class="dh-button text-success" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981;"><i class="fas fa-check-circle me-1"></i> Selesaikan Keluhan</button>
     </form>
+    @else
+    <p class="dh-muted mb-0">Tugaskan keluhan ke staf terlebih dahulu. Keluhan dapat diselesaikan setelah masuk tahap investigasi.</p>
+    @endif
 </div>
 @endif
 </div><div class="modal-footer d-flex justify-content-between align-items-center flex-wrap gap-2"><div>@if($isReport)<x-workflow-buttons :report="$ticket" :user="auth()->user()" :staff-list="$staffList" mode="buttons" />@endif</div><button type="button" class="dh-button dh-button-outline" data-bs-dismiss="modal">Tutup detail</button></div>

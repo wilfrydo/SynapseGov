@@ -388,7 +388,7 @@
                         <div class="data-item-clean">
                             <span class="data-label-clean">Tanggal Lahir</span>
                             <span class="data-value-clean"><i class="fas fa-calendar-day"></i>
-                                {{ $user->birth_date->format('d F Y') }}</span>
+                                {{ $user->birth_date->translatedFormat('d F Y') }}</span>
                         </div>
                     @endif
                     @if($user->gender)
@@ -401,13 +401,13 @@
                     <div class="data-item-clean">
                         <span class="data-label-clean">Terdaftar Pada</span>
                         <span class="data-value-clean"><i class="fas fa-clock"></i>
-                            {{ $user->created_at->format('d F Y') }}</span>
+                            {{ $user->created_at->translatedFormat('d F Y') }}</span>
                     </div>
                     @if($user->last_login_at)
                         <div class="data-item-clean">
                             <span class="data-label-clean">Login Terakhir</span>
                             <span class="data-value-clean"><i class="fas fa-sign-in-alt"></i>
-                                {{ $user->last_login_at->format('d M Y, H:i') }}</span>
+                                {{ $user->last_login_at->translatedFormat('d M Y, H:i') }}</span>
                         </div>
                     @endif
                 </div>

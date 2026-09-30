@@ -104,9 +104,18 @@
                                         Nonaktif
                                     </span>
                                 @endif
+                                @if($user->id !== auth()->id())
+                                    <form action="{{ route('admin.users.toggle_status', $user->id) }}" method="POST" style="margin-top: 0.4rem;"
+                                          onsubmit="return confirm('{{ $user->is_active ? 'Nonaktifkan akun ini? Pengguna tidak akan bisa login.' : 'Aktifkan kembali akun ini?' }}')">
+                                        @csrf
+                                        <button type="submit" style="background: none; border: none; padding: 0; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: {{ $user->is_active ? '#ef4444' : '#10b981' }};">
+                                            {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                             <td>
-                                <span style="color: #999; font-size: 0.9rem;">{{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}</span>
+                                <span style="color: #999; font-size: 0.9rem;">{{ $user->created_at ? $user->created_at->translatedFormat('d M Y') : '-' }}</span>
                             </td>
                         </tr>
                         @endforeach
@@ -198,8 +207,8 @@
                 <div class="row mt-3">
                     <div class="col-12">
                         <h6>Informasi Akun</h6>
-                        <p><strong>Tanggal Daftar:</strong> {{ $user->created_at->format('d F Y, H:i') }}</p>
-                        <p><strong>Terakhir Update:</strong> {{ $user->updated_at->format('d F Y, H:i') }}</p>
+                        <p><strong>Tanggal Daftar:</strong> {{ $user->created_at->translatedFormat('d F Y, H:i') }}</p>
+                        <p><strong>Terakhir Update:</strong> {{ $user->updated_at->translatedFormat('d F Y, H:i') }}</p>
                     </div>
                 </div>
             </div>

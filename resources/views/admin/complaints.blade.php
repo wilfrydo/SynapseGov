@@ -43,7 +43,7 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-{{ $complaint->priority == 'urgent' ? 'danger' : ($complaint->priority == 'high' ? 'warning' : ($complaint->priority == 'medium' ? 'info' : 'secondary')) }}">
-                                        {{ ucfirst($complaint->priority) }}
+                                        {{ \App\Models\Report::priorityLabel($complaint->priority) }}
                                     </span>
                                 </td>
                                 <td>{{ $complaint->created_at->format('d/m/Y H:i') }}</td>
@@ -111,7 +111,7 @@
                         <p><strong>Kategori:</strong> {{ $complaint->category }}</p>
                         <p><strong>Prioritas:</strong> 
                             <span class="badge bg-{{ $complaint->priority == 'urgent' ? 'danger' : ($complaint->priority == 'high' ? 'warning' : ($complaint->priority == 'medium' ? 'info' : 'secondary')) }}">
-                                {{ ucfirst($complaint->priority) }}
+                                {{ \App\Models\Report::priorityLabel($complaint->priority) }}
                             </span>
                         </p>
                         <p><strong>Status:</strong> 

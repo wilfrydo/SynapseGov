@@ -66,6 +66,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/complaints/{id}', [App\Http\Controllers\AdminDashboardController::class, 'updateComplaint'])->name('complaints.update');
         Route::delete('/complaints/{id}', [App\Http\Controllers\AdminDashboardController::class, 'deleteComplaint'])->name('complaints.delete');
         Route::get('/users', [App\Http\Controllers\AdminDashboardController::class, 'users'])->name('users');
+        Route::post('/users/{id}/toggle-status', [App\Http\Controllers\AdminDashboardController::class, 'toggleUserStatus'])->name('users.toggle_status');
         Route::get('/departments', [App\Http\Controllers\DepartmentController::class, 'index'])->name('departments');
         Route::post('/departments', [App\Http\Controllers\DepartmentController::class, 'store'])->name('departments.store');
         Route::put('/departments/{id}', [App\Http\Controllers\DepartmentController::class, 'update'])->name('departments.update');
