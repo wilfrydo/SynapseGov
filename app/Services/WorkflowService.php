@@ -11,7 +11,6 @@ use App\Models\AuditLog;
 use App\Models\Comment;
 use App\Models\Report;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class WorkflowService
@@ -416,19 +415,50 @@ class WorkflowService
     }
 
     /**
+     * Staff or department head hands finished work to admin for final approval.
+     * Callers lock the report and check authorization and status first.
+     */
+    public function submitForApproval(Report $report, User $user, ?string $completionNotes, array $newAttachments = []): Report
+    {
+        $oldStatus = $report->status;
+        $oldAssignedTo = $report->assigned_to;
+
+        $report->assignments()->where('status', 'active')->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+            'notes' => $completionNotes ?: 'Dikonfirmasi ke admin untuk persetujuan akhir',
+        ]);
+
+        $attachments = array_merge($report->attachments ?? [], $newAttachments);
+
+        $report->update([
+            'assigned_to' => null,
+            'status' => 'awaiting_admin_approval',
+            'last_activity_at' => now(),
+            'completion_notes' => $completionNotes,
+            'attachments' => $attachments ?: null,
+        ]);
+
+        $this->logAudit(
+            $report,
+            'confirmed_to_admin',
+            ['assigned_to' => $oldAssignedTo, 'status' => $oldStatus],
+            ['assigned_to' => null, 'status' => 'awaiting_admin_approval', 'completion_notes' => $completionNotes],
+            $user
+        );
+
+        if ($oldStatus !== 'awaiting_admin_approval') {
+            event(new ReportStatusChanged($report, $oldStatus, 'awaiting_admin_approval', $user));
+        }
+
+        return $report;
+    }
+
+    /**
      * Log audit trail
      */
     private function logAudit($model, string $event, ?array $oldValues = null, ?array $newValues = null, ?User $user = null)
     {
-        AuditLog::create([
-            'auditable_id' => $model->id,
-            'auditable_type' => get_class($model),
-            'user_id' => $user ? $user->id : Auth::id(),
-            'event' => $event,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        AuditLog::record($model, $event, $oldValues, $newValues, $user);
     }
 }

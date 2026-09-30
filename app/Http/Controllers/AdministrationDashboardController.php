@@ -318,16 +318,7 @@ class AdministrationDashboardController extends Controller
                 'last_activity_at' => now(),
             ]);
 
-            AuditLog::create([
-                'auditable_type' => Complaint::class,
-                'auditable_id' => $complaint->id,
-                'user_id' => $user->id,
-                'event' => 'complaint_assigned',
-                'old_values' => ['assigned_to' => $oldAssigned],
-                'new_values' => ['assigned_to' => $assignedTo->id, 'status' => 'investigating'],
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
+            AuditLog::record($complaint, 'complaint_assigned', ['assigned_to' => $oldAssigned], ['assigned_to' => $assignedTo->id, 'status' => 'investigating'], $user);
 
             return redirect()->back()->with('success', 'Keluhan berhasil ditugaskan ke ' . $assignedTo->name);
         });
@@ -412,36 +403,8 @@ class AdministrationDashboardController extends Controller
                 return back()->with('error', 'Laporan dengan status "' . $report->status . '" tidak dapat dikonfirmasi ke admin.');
             }
 
-            $oldStatus = $report->status;
-            $oldAssignedTo = $report->assigned_to;
-            $completionNotes = request('completion_notes', $report->completion_notes);
-
-            // Tutup active assignments record
-            $report->assignments()->where('status', 'active')->update([
-                'status' => 'completed',
-                'completed_at' => now(),
-                'notes' => $completionNotes ?: 'Dikonfirmasi ke admin untuk persetujuan akhir',
-            ]);
-
-            $report->update([
-                'assigned_to' => null,
-                'status' => 'awaiting_admin_approval',
-                'last_activity_at' => now(),
-                'completion_notes' => $completionNotes,
-            ]);
-
-            AuditLog::create([
-                'auditable_type' => Report::class,
-                'auditable_id' => $report->id,
-                'user_id' => $user->id,
-                'event' => 'confirmed_to_admin',
-                'old_values' => ['assigned_to' => $oldAssignedTo, 'status' => $oldStatus],
-                'new_values' => ['assigned_to' => null, 'status' => 'awaiting_admin_approval'],
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
-
-            event(new \App\Events\ReportStatusChanged($report, $oldStatus, 'awaiting_admin_approval', $user));
+            app(\App\Services\WorkflowService::class)
+                ->submitForApproval($report, $user, request('completion_notes', $report->completion_notes));
 
             return back()->with('success', 'Laporan telah dikonfirmasi ke admin untuk persetujuan akhir.');
         });
@@ -485,16 +448,7 @@ class AdministrationDashboardController extends Controller
                     'completed_at' => now(),
                 ]);
 
-            AuditLog::create([
-                'auditable_type' => Complaint::class,
-                'auditable_id' => $complaint->id,
-                'user_id' => $user->id,
-                'event' => 'complaint_resolved',
-                'old_values' => ['status' => $oldStatus],
-                'new_values' => ['status' => 'resolved', 'resolution_notes' => $request->resolution_notes],
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
+            AuditLog::record($complaint, 'complaint_resolved', ['status' => $oldStatus], ['status' => 'resolved', 'resolution_notes' => $request->resolution_notes], $user);
 
             return redirect()->back()->with('success', 'Keluhan berhasil diselesaikan.');
         });

@@ -113,4 +113,32 @@ class WorkflowAuthorizationTest extends TestCase
         $this->assertSame('submitted', $report->fresh()->status);
         $this->assertNull($report->fresh()->queue_no);
     }
+
+    public function test_staff_submits_finished_work_for_admin_approval(): void
+    {
+        $report = $this->report('RPT-20261001-AUTH06', 'in_progress');
+        $report->update(['assigned_to' => $this->staff->id]);
+
+        $this->actingAs($this->staff)
+            ->post("/workflow/reports/{$report->id}/staff-confirm-admin", ['completion_notes' => 'Lubang sudah ditambal'])
+            ->assertSessionHas('success');
+
+        $fresh = $report->fresh();
+        $this->assertSame('awaiting_admin_approval', $fresh->status);
+        $this->assertNull($fresh->assigned_to);
+        $this->assertSame('Lubang sudah ditambal', $fresh->completion_notes);
+        $this->assertTrue($fresh->auditLogs()->where('event', 'confirmed_to_admin')->where('user_id', $this->staff->id)->exists());
+    }
+
+    public function test_department_head_recommends_report_to_admin(): void
+    {
+        $report = $this->report('RPT-20261001-AUTH07', 'reviewed');
+
+        $this->actingAs($this->head)
+            ->post("/administration/reports/{$report->id}/confirm-to-admin")
+            ->assertSessionHas('success');
+
+        $this->assertSame('awaiting_admin_approval', $report->fresh()->status);
+        $this->assertTrue($report->fresh()->auditLogs()->where('event', 'confirmed_to_admin')->where('user_id', $this->head->id)->exists());
+    }
 }
