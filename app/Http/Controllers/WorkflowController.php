@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Report;
 use App\Models\User;
 use App\Services\WorkflowService;
+use App\Support\Attachments;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

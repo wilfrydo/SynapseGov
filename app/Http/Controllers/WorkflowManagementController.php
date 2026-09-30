@@ -6,8 +6,8 @@ use App\Models\AuditLog;
 use App\Models\Report;
 use App\Models\User;
 use App\Services\WorkflowService;
-use Illuminate\Http\RedirectResponse;
 use App\Support\Attachments;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -109,7 +109,7 @@ class WorkflowManagementController extends Controller
         return DB::transaction(function () use ($id, $user) {
             $report = Report::where(function ($q) use ($user) {
                 $q->where('department_id', $user->department_id)
-                  ->orWhere('assigned_to', $user->id);
+                    ->orWhere('assigned_to', $user->id);
             })->lockForUpdate()->findOrFail($id);
 
             // Authorization: assigned staff or staff in department
@@ -182,7 +182,7 @@ class WorkflowManagementController extends Controller
         return DB::transaction(function () use ($id, $assignedTo, $user, $request) {
             $report = Report::where(function ($q) use ($user) {
                 $q->where('department_id', $user->department_id)
-                  ->orWhere('assigned_to', $user->id);
+                    ->orWhere('assigned_to', $user->id);
             })->lockForUpdate()->findOrFail($id);
 
             // Status guard
@@ -218,7 +218,7 @@ class WorkflowManagementController extends Controller
         return DB::transaction(function () use ($id, $user, $request) {
             $report = Report::where(function ($q) use ($user) {
                 $q->where('department_id', $user->department_id)
-                  ->orWhere('assigned_to', $user->id);
+                    ->orWhere('assigned_to', $user->id);
             })->lockForUpdate()->findOrFail($id);
 
             if ($user->role !== 'staff' || ((int) $report->assigned_to !== (int) $user->id && (int) $report->department_id !== (int) $user->department_id)) {

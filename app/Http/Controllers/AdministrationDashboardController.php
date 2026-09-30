@@ -22,7 +22,7 @@ class AdministrationDashboardController extends Controller
         $user = Auth::user();
         $department = $user->department;
 
-        if (!$department) {
+        if (! $department) {
             return redirect()->route('home')->with('error', 'Akun Anda belum terhubung dengan departemen manapun.');
         }
 
@@ -148,7 +148,7 @@ class AdministrationDashboardController extends Controller
 
         // Filter pencarian
         if ($request->filled('q')) {
-            $term = '%' . $request->input('q') . '%';
+            $term = '%'.$request->input('q').'%';
             $query->where(function ($q) use ($term) {
                 $q->where('title', 'like', $term)
                     ->orWhere('ticket_no', 'like', $term)
@@ -192,7 +192,7 @@ class AdministrationDashboardController extends Controller
 
         // Filter pencarian
         if ($request->filled('q')) {
-            $term = '%' . $request->input('q') . '%';
+            $term = '%'.$request->input('q').'%';
             $query->where(function ($q) use ($term) {
                 $q->where('title', 'like', $term)
                     ->orWhere('ticket_no', 'like', $term)
@@ -240,7 +240,7 @@ class AdministrationDashboardController extends Controller
     public function assignReport(Request $request, $id)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ['department_head', 'staff'])) {
+        if (! in_array($user->role, ['department_head', 'staff'])) {
             abort(403, 'Anda tidak berhak menugaskan laporan ini.');
         }
 
@@ -266,14 +266,14 @@ class AdministrationDashboardController extends Controller
             $workflowService = app(\App\Services\WorkflowService::class);
             $workflowService->assignReport($report, $assignedTo, $user, $request->notes);
 
-            return redirect()->back()->with('success', 'Laporan berhasil ditugaskan ke ' . $assignedTo->name);
+            return redirect()->back()->with('success', 'Laporan berhasil ditugaskan ke '.$assignedTo->name);
         });
     }
 
     public function assignComplaint(Request $request, $id)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ['department_head', 'staff'])) {
+        if (! in_array($user->role, ['department_head', 'staff'])) {
             abort(403, 'Anda tidak berhak menugaskan keluhan ini.');
         }
 
@@ -320,7 +320,7 @@ class AdministrationDashboardController extends Controller
 
             AuditLog::record($complaint, 'complaint_assigned', ['assigned_to' => $oldAssigned], ['assigned_to' => $assignedTo->id, 'status' => 'investigating'], $user);
 
-            return redirect()->back()->with('success', 'Keluhan berhasil ditugaskan ke ' . $assignedTo->name);
+            return redirect()->back()->with('success', 'Keluhan berhasil ditugaskan ke '.$assignedTo->name);
         });
     }
 
@@ -334,13 +334,13 @@ class AdministrationDashboardController extends Controller
             })
             ->findOrFail($id);
 
-        if (!class_exists('ZipArchive')) {
+        if (! class_exists('ZipArchive')) {
             return back()->with('error', 'Ekstensi ZipArchive PHP tidak terpasang di server.');
         }
 
         $zip = new \ZipArchive;
-        $zipPath = storage_path('app/temp/report_' . $report->id . '_' . time() . '.zip');
-        if (!is_dir(dirname($zipPath))) {
+        $zipPath = storage_path('app/temp/report_'.$report->id.'_'.time().'.zip');
+        if (! is_dir(dirname($zipPath))) {
             mkdir(dirname($zipPath), 0755, true);
         }
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
@@ -367,7 +367,7 @@ class AdministrationDashboardController extends Controller
             foreach ($report->attachments as $relPath) {
                 $abs = Attachments::path($relPath);
                 if ($abs) {
-                    $zip->addFile($abs, 'attachments/' . basename($relPath));
+                    $zip->addFile($abs, 'attachments/'.basename($relPath));
                 }
             }
         }
@@ -383,7 +383,7 @@ class AdministrationDashboardController extends Controller
     public function confirmToAdmin($id)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ['staff', 'department_head'])) {
+        if (! in_array($user->role, ['staff', 'department_head'])) {
             return back()->with('error', 'Hanya staff atau Kepala Departemen yang berhak mengonfirmasi laporan ini ke admin.');
         }
 
@@ -399,8 +399,8 @@ class AdministrationDashboardController extends Controller
 
             // Status guard: allow valid active and approval statuses
             $allowedStatuses = ['reviewed', 'in_progress', 'assigned', 'needs_revision', 'verified', 'awaiting_admin_approval'];
-            if (!in_array($report->status, $allowedStatuses)) {
-                return back()->with('error', 'Laporan dengan status "' . $report->status . '" tidak dapat dikonfirmasi ke admin.');
+            if (! in_array($report->status, $allowedStatuses)) {
+                return back()->with('error', 'Laporan dengan status "'.$report->status.'" tidak dapat dikonfirmasi ke admin.');
             }
 
             app(\App\Services\WorkflowService::class)
@@ -416,7 +416,7 @@ class AdministrationDashboardController extends Controller
     public function resolveComplaint(Request $request, $id)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ['department_head', 'staff'])) {
+        if (! in_array($user->role, ['department_head', 'staff'])) {
             abort(403, 'Anda tidak berhak menyelesaikan keluhan ini.');
         }
 

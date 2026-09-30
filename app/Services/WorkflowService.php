@@ -315,7 +315,7 @@ class WorkflowService
                     'assignable_type' => Report::class,
                     'assigned_to' => $assignedStaffId,
                     'assigned_by' => $user->id,
-                    'notes' => 'Laporan dibuka kembali (Masalah belum selesai): ' . $reason,
+                    'notes' => 'Laporan dibuka kembali (Masalah belum selesai): '.$reason,
                     'assigned_at' => now(),
                     'status' => 'active',
                 ]);

@@ -44,12 +44,12 @@ class InternalCommentAddedNotification extends Notification implements ShouldQue
         $ticketNo = $reportable->ticket_no ?? 'N/A';
 
         return (new MailMessage)
-            ->subject('[Internal Note] New Comment - ' . $ticketNo)
-            ->greeting('Hello ' . $notifiable->name)
-            ->line('A new internal note/comment has been added to ticket ' . $ticketNo . '.')
-            ->line('Comment by: ' . ($this->comment->user->name ?? 'Staff/Admin'))
-            ->line('Content: ' . substr($this->comment->content, 0, 100) . '...')
-            ->action('View Ticket Details', url('/admin/reports/' . ($reportable->id ?? '')))
+            ->subject('[Internal Note] New Comment - '.$ticketNo)
+            ->greeting('Hello '.$notifiable->name)
+            ->line('A new internal note/comment has been added to ticket '.$ticketNo.'.')
+            ->line('Comment by: '.($this->comment->user->name ?? 'Staff/Admin'))
+            ->line('Content: '.substr($this->comment->content, 0, 100).'...')
+            ->action('View Ticket Details', url('/admin/reports/'.($reportable->id ?? '')))
             ->line('This note is visible only to internal personnel.');
     }
 
@@ -68,7 +68,7 @@ class InternalCommentAddedNotification extends Notification implements ShouldQue
             'commenter_name' => $this->comment->user->name ?? 'Unknown',
             'comment_preview' => substr($this->comment->content, 0, 100),
             'is_internal' => true,
-            'message' => 'Catatan internal baru pada ' . ($reportable->ticket_no ?? 'tiket') . ' oleh ' . ($this->comment->user->name ?? 'Staff/Admin'),
+            'message' => 'Catatan internal baru pada '.($reportable->ticket_no ?? 'tiket').' oleh '.($this->comment->user->name ?? 'Staff/Admin'),
         ];
     }
 }

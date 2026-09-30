@@ -33,6 +33,7 @@ class DownloadController extends Controller
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             try {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.pdf', $data);
+
                 return $pdf->download('report_'.$report->ticket_no.'.pdf');
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('DomPDF render fallback: '.$e->getMessage());
@@ -44,6 +45,7 @@ class DownloadController extends Controller
             $html = view('admin.reports.pdf', $data)->render();
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('PDF report render error: '.$e->getMessage());
+
             return back()->with('error', 'Gagal memuat dokumen laporan.');
         }
 
@@ -170,6 +172,7 @@ class DownloadController extends Controller
                         return "'".$val;
                     }
                 }
+
                 return $val;
             }, $row);
 
