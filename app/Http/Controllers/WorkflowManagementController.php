@@ -7,6 +7,7 @@ use App\Models\Report;
 use App\Models\User;
 use App\Services\WorkflowService;
 use Illuminate\Http\RedirectResponse;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -122,6 +123,11 @@ class WorkflowManagementController extends Controller
                 return back()->with('error', 'Laporan dengan status "'.$report->status.'" tidak dapat diteruskan ke Kepala Departemen.');
             }
 
+            // Initial verification belongs to admin (or the department head); staff may only forward verified work
+            if ($user->isStaff() && in_array($report->status, ['submitted', 'pending'])) {
+                return back()->with('error', 'Laporan harus diverifikasi Admin terlebih dahulu sebelum diteruskan.');
+            }
+
             // If still submitted/pending, verify first via WorkflowService
             if (in_array($report->status, ['submitted', 'pending'])) {
                 $this->workflowService->verifyReport($report, $user);
@@ -173,9 +179,13 @@ class WorkflowManagementController extends Controller
 
         $assignedTo = User::findOrFail($request->assigned_to);
 
-        // Verify the assigned user is staff
+        // Verify the assigned user is staff of the head's own department (multi-OPD isolation)
         if (! $assignedTo->isStaff()) {
             return back()->with('error', 'User yang dipilih bukan staff.');
+        }
+
+        if ((int) $assignedTo->department_id !== (int) $user->department_id) {
+            return back()->with('error', 'Staff yang dipilih bukan bagian dari departemen Anda.');
         }
 
         return DB::transaction(function () use ($id, $assignedTo, $user, $request) {
@@ -246,8 +256,7 @@ class WorkflowManagementController extends Controller
             $newAttachments = [];
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
-                    $path = $file->store('public/attachments/resolutions');
-                    $newAttachments[] = str_replace('public/', '', $path);
+                    $newAttachments[] = Attachments::store($file, 'resolutions');
                 }
             }
 
@@ -355,7 +364,7 @@ class WorkflowManagementController extends Controller
             // Fire event for status change
             event(new \App\Events\ReportStatusChanged($report, $oldStatus, 'resolved', $user));
 
-            return back()->with('success', 'Laporan telah disetujui dan ditutup. User akan mendapat notifikasi.');
+            return back()->with('success', 'Laporan disetujui dan berstatus Selesai. Pelapor akan diminta mengonfirmasi penyelesaian.');
         });
     }
 
@@ -376,6 +385,11 @@ class WorkflowManagementController extends Controller
         ]);
 
         $assignedTo = User::findOrFail($request->assigned_to);
+
+        // Revision work can only go back to field staff, never to a citizen or another role
+        if (! $assignedTo->isStaff()) {
+            return back()->with('error', 'User yang dipilih bukan staff.');
+        }
 
         return DB::transaction(function () use ($id, $assignedTo, $user, $request) {
             $report = Report::lockForUpdate()->findOrFail($id);

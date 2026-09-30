@@ -7,6 +7,7 @@ use App\Models\Complaint;
 use App\Models\Department;
 use App\Models\Report;
 use App\Models\User;
+use App\Support\Attachments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -373,13 +374,8 @@ class AdministrationDashboardController extends Controller
 
         if (is_array($report->attachments)) {
             foreach ($report->attachments as $relPath) {
-                $normalized = str_replace('\\', '/', (string) $relPath);
-                $cleanRel = str_starts_with($normalized, 'public/') ? substr($normalized, 7) : $normalized;
-                $abs = storage_path('app/public/' . $cleanRel);
-                if (!file_exists($abs)) {
-                    $abs = storage_path('app/' . $normalized);
-                }
-                if (file_exists($abs)) {
+                $abs = Attachments::path($relPath);
+                if ($abs) {
                     $zip->addFile($abs, 'attachments/' . basename($relPath));
                 }
             }
@@ -467,6 +463,11 @@ class AdministrationDashboardController extends Controller
 
         return DB::transaction(function () use ($id, $request, $user) {
             $complaint = Complaint::where('department_id', $user->department_id)->lockForUpdate()->findOrFail($id);
+
+            // Only a complaint that is being handled can be closed out (see Complaint::STATUS_TRANSITIONS)
+            if (! $complaint->canBeResolved()) {
+                return redirect()->back()->with('error', 'Keluhan harus ditugaskan dan diinvestigasi terlebih dahulu sebelum diselesaikan.');
+            }
 
             $oldStatus = $complaint->status;
             $complaint->update([

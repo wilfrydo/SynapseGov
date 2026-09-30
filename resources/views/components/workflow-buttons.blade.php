@@ -291,29 +291,29 @@
 
 {{-- Modals for Admin (deferred to end of body to avoid stacking issues) --}}
 @if($user->isAdmin())
-    @push('modals')
+    @pushOnce('modals', 'workflow-modals-admin-'.$report->id)
         @include('components.modals.assign-staff', ['report' => $report, 'staffList' => $staffList])
         @include('components.modals.assign-head', ['report' => $report])
         @include('components.modals.approve-report', ['report' => $report])
         @include('components.modals.reject-report', ['report' => $report, 'staffList' => $staffList])
         @include('components.modals.awaiting-info', ['report' => $report])
         @include('components.modals.reject-initial', ['report' => $report])
-    @endpush
+    @endPushOnce
 @endif
 
 {{-- Modals for Staff (deferred) --}}
 @if($user->isStaff())
-    @push('modals')
+    @pushOnce('modals', 'workflow-modals-staff-'.$report->id)
         @include('components.modals.confirm-forward', ['report' => $report])
         @include('components.modals.complete-report', ['report' => $report])
         @include('components.modals.awaiting-info', ['report' => $report])
-    @endpush
+    @endPushOnce
 @endif
 
 {{-- Modals for Department Head (deferred) --}}
 @if($user->isDepartmentHead())
-    @push('modals')
+    @pushOnce('modals', 'workflow-modals-head-'.$report->id)
         @include('components.modals.assign-staff', ['report' => $report, 'staffList' => $staffList])
         @include('components.modals.review-return', ['report' => $report])
-    @endpush
+    @endPushOnce
 @endif

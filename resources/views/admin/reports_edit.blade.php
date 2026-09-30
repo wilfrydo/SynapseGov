@@ -172,12 +172,12 @@
                 
                 <div class="mb-3">
                     <strong>Tanggal Dibuat:</strong><br>
-                    <span class="text-muted">{{ $report->created_at->format('d F Y, H:i') }}</span>
+                    <span class="text-muted">{{ $report->created_at->translatedFormat('d F Y, H:i') }}</span>
                 </div>
                 
                 <div class="mb-3">
                     <strong>Terakhir Diupdate:</strong><br>
-                    <span class="text-muted">{{ $report->updated_at->format('d F Y, H:i') }}</span>
+                    <span class="text-muted">{{ $report->updated_at->translatedFormat('d F Y, H:i') }}</span>
                 </div>
                 
                 @if($report->assignedUser)

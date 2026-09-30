@@ -93,13 +93,9 @@
                             <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                             <select class="form-select @error('status') is-invalid @enderror" 
                                     id="status" name="status" required>
-                                <option value="submitted" @selected(old('status', $complaint->status) === 'submitted')>Baru masuk</option>
-                                <option value="pending" @selected(old('status', $complaint->status) === 'pending')>Menunggu verifikasi</option>
-                                <option value="investigating" @selected(old('status', $complaint->status) === 'investigating')>Dalam investigasi</option>
-                                <option value="in_progress" @selected(old('status', $complaint->status) === 'in_progress')>Dalam pengerjaan</option>
-                                <option value="resolved" @selected(old('status', $complaint->status) === 'resolved')>Selesai</option>
-                                <option value="closed" @selected(old('status', $complaint->status) === 'closed')>Ditutup</option>
-                                <option value="rejected" @selected(old('status', $complaint->status) === 'rejected')>Ditolak</option>
+                                @foreach($complaint->allowedStatuses() as $status)
+                                    <option value="{{ $status }}" @selected(old('status', $complaint->status) === $status)>{{ \App\Models\Report::statusLabel($status) }}</option>
+                                @endforeach
                             </select>
                             @error('status')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -175,12 +171,12 @@
                 
                 <div class="mb-3">
                     <strong>Tanggal Diajukan:</strong><br>
-                    <span class="text-muted">{{ $complaint->created_at->format('d F Y, H:i') }}</span>
+                    <span class="text-muted">{{ $complaint->created_at->translatedFormat('d F Y, H:i') }}</span>
                 </div>
                 
                 <div class="mb-3">
                     <strong>Terakhir Diupdate:</strong><br>
-                    <span class="text-muted">{{ $complaint->updated_at->format('d F Y, H:i') }}</span>
+                    <span class="text-muted">{{ $complaint->updated_at->translatedFormat('d F Y, H:i') }}</span>
                 </div>
                 
                 @if($complaint->assignedUser)

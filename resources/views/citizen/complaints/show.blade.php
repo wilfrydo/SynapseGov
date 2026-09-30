@@ -49,7 +49,7 @@
                                 <label class="detail-label"><i class="fas fa-flag me-2"></i>Prioritas</label>
                                 <div class="detail-value">
                                     <span class="badge badge-priority-{{ $complaint->priority }}">
-                                        {{ ucfirst($complaint->priority) }}
+                                        {{ \App\Models\Report::priorityLabel($complaint->priority) }}
                                     </span>
                                 </div>
                             </div>
@@ -71,13 +71,13 @@
                         <div class="col-md-6">
                             <div class="detail-item">
                                 <label class="detail-label"><i class="fas fa-clock me-2"></i>Diajukan</label>
-                                <div class="detail-value">{{ $complaint->created_at->format('d F Y, H:i') }}</div>
+                                <div class="detail-value">{{ $complaint->created_at->translatedFormat('d F Y, H:i') }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="detail-item">
                                 <label class="detail-label"><i class="fas fa-sync me-2"></i>Terakhir Update</label>
-                                <div class="detail-value">{{ $complaint->updated_at->format('d F Y, H:i') }}</div>
+                                <div class="detail-value">{{ $complaint->updated_at->translatedFormat('d F Y, H:i') }}</div>
                             </div>
                         </div>
                         @if($complaint->assignedUser)
@@ -130,7 +130,7 @@
                         @if($complaint->resolved_at)
                         <small class="text-muted">
                             <i class="fas fa-calendar-check me-1"></i>
-                            Diselesaikan pada: {{ $complaint->resolved_at->format('d F Y, H:i') }}
+                            Diselesaikan pada: {{ $complaint->resolved_at->translatedFormat('d F Y, H:i') }}
                         </small>
                         @endif
                     </div>
@@ -183,7 +183,7 @@
                             </div>
                             <div class="timeline-details">
                                 <h6>Keluhan Diajukan</h6>
-                                <small>{{ $complaint->created_at->format('d F Y, H:i') }}</small>
+                                <small>{{ $complaint->created_at->translatedFormat('d F Y, H:i') }}</small>
                             </div>
                         </div>
                         
@@ -194,7 +194,7 @@
                             </div>
                             <div class="timeline-details">
                                 <h6>Sedang Diselidiki</h6>
-                                <small>{{ $complaint->updated_at->format('d F Y, H:i') }}</small>
+                                <small>{{ $complaint->updated_at->translatedFormat('d F Y, H:i') }}</small>
                             </div>
                         </div>
                         @endif
@@ -206,7 +206,7 @@
                             </div>
                             <div class="timeline-details">
                                 <h6>Keluhan Diselesaikan</h6>
-                                <small>{{ $complaint->resolved_at ? $complaint->resolved_at->format('d F Y, H:i') : $complaint->updated_at->format('d F Y, H:i') }}</small>
+                                <small>{{ $complaint->resolved_at ? $complaint->resolved_at->translatedFormat('d F Y, H:i') : $complaint->updated_at->translatedFormat('d F Y, H:i') }}</small>
                             </div>
                         </div>
                         @endif

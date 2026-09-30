@@ -7,14 +7,15 @@ use DomainException;
 use Illuminate\Http\Request;
 
 /**
- * Thrown when a report status change is not allowed by Report::STATUS_TRANSITIONS.
+ * Thrown when a status change is not allowed by Report::STATUS_TRANSITIONS or Complaint::STATUS_TRANSITIONS.
  */
 class InvalidStatusTransition extends DomainException
 {
-    public function __construct(public readonly ?string $from, public readonly string $to)
+    public function __construct(public readonly ?string $from, public readonly string $to, string $subject = 'Laporan')
     {
         parent::__construct(sprintf(
-            'Laporan berstatus "%s" tidak dapat diubah menjadi "%s".',
+            '%s berstatus "%s" tidak dapat diubah menjadi "%s".',
+            $subject,
             $from ? Report::statusLabel($from) : '-',
             Report::statusLabel($to)
         ));

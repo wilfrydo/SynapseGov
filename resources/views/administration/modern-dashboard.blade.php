@@ -70,7 +70,7 @@
         <a class="dh-report-row text-decoration-none" style="text-decoration: none !important;" href="{{ route('administration.reports', ['q' => $report->ticket_no]) }}">
             <span class="dh-file-icon"><i class="far fa-file-lines" aria-hidden="true"></i></span>
             <div class="dh-row-main">
-                <small>{{ $report->ticket_no }} · {{ $report->created_at->format('d M Y') }}</small>
+                <small>{{ $report->ticket_no }} · {{ $report->created_at->translatedFormat('d M Y') }}</small>
                 <h3>{{ $report->title }}</h3>
                 <span>{{ $report->assignedUser?->name ?? 'Belum ada penanggung jawab' }}</span>
             </div>

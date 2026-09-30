@@ -25,7 +25,7 @@
                                 </div>
                                 <div>
                                     <h6 class="mb-1 fw-bold text-dark">{{ $report->user ? $report->user->name : 'N/A' }}</h6>
-                                    <div class="text-muted small mb-1"><i class="fas fa-clock me-1 text-primary opacity-50"></i>{{ $report->created_at->format('d M Y, H:i') }}</div>
+                                    <div class="text-muted small mb-1"><i class="fas fa-clock me-1 text-primary opacity-50"></i>{{ $report->created_at->translatedFormat('d M Y, H:i') }}</div>
                                     <small class="text-primary fw-bold" style="font-family: monospace; background: var(--bs-primary-bg-subtle, #cfe2ff); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--bs-primary-border-subtle, #b6d4fe);">{{ $report->ticket_no }}</small>
                                 </div>
                             </div>
@@ -42,7 +42,7 @@
                                     elseif ($report->priority === 'medium') $priorityColor = 'text-info';
                                     elseif ($report->priority === 'low') $priorityColor = 'text-success';
                                 @endphp
-                                <span class="badge bg-light text-secondary border"><i class="fas fa-exclamation-circle me-1 {{ $priorityColor }} opacity-75"></i> Prioritas {{ ucfirst($report->priority) }}</span>
+                                <span class="badge bg-light text-secondary border"><i class="fas fa-exclamation-circle me-1 {{ $priorityColor }} opacity-75"></i> Prioritas {{ \App\Models\Report::priorityLabel($report->priority) }}</span>
                                 @if($report->department)
                                 <span class="badge bg-light text-secondary border"><i class="fas fa-building me-1 text-primary opacity-75"></i>{{ $report->department->name }}</span>
                                 @endif
@@ -150,7 +150,7 @@
                                     <div class="text-muted small d-flex flex-wrap align-items-center gap-2">
                                         <span><i class="fas fa-envelope me-1"></i>{{ $report->user ? $report->user->email : '-' }}</span>
                                         <span class="d-none d-md-inline">•</span>
-                                        <span><i class="fas fa-calendar-alt me-1"></i>{{ $report->created_at->format('d F Y, H:i') }}</span>
+                                        <span><i class="fas fa-calendar-alt me-1"></i>{{ $report->created_at->translatedFormat('d F Y, H:i') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -159,7 +159,7 @@
                                     <i class="fas fa-circle me-2" style="font-size: 0.4rem;"></i> {{ \App\Models\Report::statusLabel($report->status) }}
                                 </span><br>
                                 <span class="badge bg-{{ $report->priority == 'urgent' ? 'danger' : ($report->priority == 'high' ? 'warning' : ($report->priority == 'medium' ? 'info' : 'secondary')) }} bg-opacity-10 text-{{ $report->priority == 'urgent' ? 'danger' : ($report->priority == 'high' ? 'warning' : ($report->priority == 'medium' ? 'info' : 'secondary')) }} rounded-pill px-3 py-1 border border-{{ $report->priority == 'urgent' ? 'danger' : ($report->priority == 'high' ? 'warning' : ($report->priority == 'medium' ? 'info' : 'secondary')) }}-subtle">
-                                    <i class="fas fa-exclamation-triangle me-1"></i> Prioritas {{ ucfirst($report->priority) }}
+                                    <i class="fas fa-exclamation-triangle me-1"></i> Prioritas {{ \App\Models\Report::priorityLabel($report->priority) }}
                                 </span>
                             </div>
                         </div>
