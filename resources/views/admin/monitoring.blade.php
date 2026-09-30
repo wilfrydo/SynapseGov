@@ -233,7 +233,10 @@
 
 @section('scripts')
 <script>
-// Monthly Trends Chart
+// Monthly Trends Chart. Chart.js is loaded with defer, so wait for DOMContentLoaded
+// (deferred scripts run before it) and skip quietly if the CDN could not be reached.
+document.addEventListener('DOMContentLoaded', function () {
+if (typeof Chart === 'undefined') return;
 const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
 const monthlyTrendsChart = new Chart(ctx, {
     type: 'line',
@@ -262,6 +265,7 @@ const monthlyTrendsChart = new Chart(ctx, {
             }
         }
     }
+});
 });
 </script>
 @endsection

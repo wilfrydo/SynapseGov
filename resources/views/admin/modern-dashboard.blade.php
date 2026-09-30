@@ -409,7 +409,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const ctx = document.getElementById('trendsChart');
-            if (!ctx) return;
+            if (!ctx || typeof Chart === 'undefined') return;
 
             // Monthly data from controller
             const monthlyReports = @json($monthlyStats['reports'] ?? []);
